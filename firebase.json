@@ -1,0 +1,22 @@
+{
+	"hosting": {
+		"public": "build",
+		"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+		"rewrites": [
+			{
+				"source": "/admin/**",
+				"destination": "/admin/index.html"
+			},
+			{
+				"source": "**",
+				"destination": "/200.html"
+			}
+		]
+	},
+	"firestore": {
+		"rules": "firestore.rules"
+	},
+	"storage": {
+		"rules": "storage.rules"
+	}
+}

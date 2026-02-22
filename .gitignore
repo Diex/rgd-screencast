@@ -1,0 +1,9 @@
+node_modules
+build
+admin/dist
+admin/node_modules
+.svelte-kit
+.env
+.env.local
+.firebase
+*.log
