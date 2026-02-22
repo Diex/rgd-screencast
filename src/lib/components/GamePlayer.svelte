@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
-	import { PLATFORM_TO_CORE } from '$lib/types/game';
+	import { getCoreForPlatform } from '$lib/types/game';
 	import { ref, getDownloadURL } from 'firebase/storage';
 	import { storage } from '$lib/firebase';
 
 	let { game }: { game: Game } = $props();
 
 	let loadError = $state<string | null>(null);
+	let iframeSrc = $state<string | null>(null);
 
 	const EJS_CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
@@ -19,24 +20,38 @@
 		return getDownloadURL(ref(storage, romUrl));
 	}
 
+	function buildIframeBlobUrl(romUrl: string, core: string): string {
+		const html = `<!DOCTYPE html>
+<html><head>
+<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
+</head><body>
+<div id="game" style="width:100%;height:100%"></div>
+<script>
+  var EJS_player = '#game';
+  var EJS_core = '${core}';
+  var EJS_gameUrl = '${romUrl}';
+  var EJS_pathtodata = '${EJS_CDN}';
+  var EJS_startOnLoaded = true;
+<\/script>
+<script src="${EJS_CDN}loader.js"><\/script>
+</body></html>`;
+		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+	}
+
 	$effect(() => {
 		let cancelled = false;
-		let scriptEl: HTMLScriptElement | null = null;
 		loadError = null;
+		iframeSrc = null;
 
-		resolveRomUrl(game.romUrl).then((url) => {
+		const core = getCoreForPlatform(game.platform);
+		if (!core) {
+			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
+			return;
+		}
+
+		resolveRomUrl(game.rom).then((url) => {
 			if (cancelled) return;
-
-			const w = window as any;
-			w.EJS_player = '#emulator-container';
-			w.EJS_core = PLATFORM_TO_CORE[game.platform];
-			w.EJS_gameUrl = url;
-			w.EJS_pathtodata = EJS_CDN;
-			w.EJS_startOnLoaded = true;
-
-			scriptEl = document.createElement('script');
-			scriptEl.src = `${EJS_CDN}loader.js`;
-			document.body.appendChild(scriptEl);
+			iframeSrc = buildIframeBlobUrl(url, core);
 		}).catch((err) => {
 			if (cancelled) return;
 			console.error('Failed to load ROM:', err);
@@ -45,13 +60,7 @@
 
 		return () => {
 			cancelled = true;
-			if (scriptEl) scriptEl.remove();
-			const ejsKeys = Object.keys(window).filter((k) => k.startsWith('EJS_'));
-			for (const key of ejsKeys) {
-				delete (window as any)[key];
-			}
-			const container = document.getElementById('emulator-container');
-			if (container) container.innerHTML = '';
+			if (iframeSrc) URL.revokeObjectURL(iframeSrc);
 		};
 	});
 </script>
@@ -60,6 +69,15 @@
 	<div class="flex aspect-video w-full max-w-4xl items-center justify-center rounded-lg bg-surface-800">
 		<p class="text-error-500">{loadError}</p>
 	</div>
+{:else if iframeSrc}
+	<iframe
+		src={iframeSrc}
+		class="aspect-video w-full max-w-4xl overflow-hidden rounded-lg border-0"
+		title="{game.title} emulator"
+		allow="autoplay; gamepad"
+	></iframe>
 {:else}
-	<div id="emulator-container" class="aspect-video w-full max-w-4xl overflow-hidden rounded-lg"></div>
+	<div class="flex aspect-video w-full max-w-4xl items-center justify-center rounded-lg bg-surface-800">
+		<p class="text-surface-400">Loading emulator...</p>
+	</div>
 {/if}

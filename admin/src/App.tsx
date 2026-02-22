@@ -103,7 +103,7 @@ export default function App() {
 					dataSourceDelegate={firestoreDelegate}
 					storageSource={storageSource}
 				>
-					{({ context, loading }) => {
+					{({ loading }) => {
 						if (loading || authLoading) {
 							return <CircularProgressCenter size={'large'} />;
 						}

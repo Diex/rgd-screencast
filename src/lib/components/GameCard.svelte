@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
-	import { PLATFORM_LABELS } from '$lib/types/game';
+	import { getLabelForPlatform } from '$lib/types/game';
 
 	let { game }: { game: Game } = $props();
 </script>
@@ -24,7 +24,7 @@
 		<h3 class="h4 font-bold">{game.title}</h3>
 		<div class="flex flex-wrap gap-2">
 			<span class="badge preset-filled-primary-500 text-xs">
-				{PLATFORM_LABELS[game.platform]}
+				{getLabelForPlatform(game.platform)}
 			</span>
 			<span class="badge preset-filled-surface-500 text-xs">{game.year}</span>
 			{#each game.tags as tag}

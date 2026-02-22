@@ -1,5 +1,8 @@
 {
-	"projects": {
-		"default": "rgd-screencast"
-	}
+  "projects": {
+    "default": "rgd-screencast",
+    "rgd": "rgd-screencast"
+  },
+  "targets": {},
+  "etags": {}
 }

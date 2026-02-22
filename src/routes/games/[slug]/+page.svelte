@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import GamePlayer from '$lib/components/GamePlayer.svelte';
-	import { PLATFORM_LABELS } from '$lib/types/game';
+	import { getLabelForPlatform } from '$lib/types/game';
 	import { fetchGameBySlug } from '$lib/stores/games';
 	import type { Game } from '$lib/types/game';
 
@@ -11,18 +11,24 @@
 
 	$effect(() => {
 		const slug = $page.params.slug;
+		let cancelled = false;
 		loading = true;
 		error = false;
 		fetchGameBySlug(slug)
 			.then((result) => {
+				if (cancelled) return;
 				game = result;
 				loading = false;
 				if (!result) error = true;
 			})
 			.catch(() => {
+				if (cancelled) return;
 				loading = false;
 				error = true;
 			});
+		return () => {
+			cancelled = true;
+		};
 	});
 </script>
 
@@ -54,7 +60,7 @@
 		<div class="card p-6 space-y-4">
 			<div class="flex flex-wrap gap-3">
 				<span class="badge preset-filled-primary-500">
-					{PLATFORM_LABELS[game.platform]}
+					{getLabelForPlatform(game.platform)}
 				</span>
 				<span class="badge preset-filled-surface-500">{game.year}</span>
 				{#each game.tags as tag}

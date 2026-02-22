@@ -28,12 +28,18 @@ cd admin && npm run build  # Build admin app
 - **Tailwind v4**: CSS-first config via `@import` directives in `src/app.css`. No `tailwind.config.ts`.
 - **Firebase env vars**: SvelteKit uses `$env/dynamic/public` with `PUBLIC_FIREBASE_*` prefix. Admin uses Vite's `import.meta.env` with `VITE_FIREBASE_*` prefix.
 - **FireCMS**: Community edition (MIT), uses manual composition pattern (`FireCMS`, `Scaffold`, `AppBar`, `Drawer`, `NavigationRoutes`). NOT the `FirebaseCMSApp` shortcut. Requires Tailwind v4 + `@firecms/ui/index.css` import.
-- **Firestore rules**: Currently allow any authenticated user to write (dev mode). Tighten to `fireCMSUser` claim for production.
-- **EmulatorJS**: `GamePlayer.svelte` sets `window.EJS_*` globals in `$effect()` and injects CDN loader.js. Cleanup removes globals and script on destroy.
+- **Firestore rules**: Writes restricted to `fireCMSUser` custom claim (admin only). Reads are public.
+- **Storage rules**: Files live under `games/` prefix (e.g., `games/roms/`, `games/screenshots/`). Rules must match this path.
+- **Firebase Auth**: Initialized in `src/lib/firebase.ts`, auth store in `src/lib/stores/auth.ts`. Uses `signInWithRedirect` (not popup — popup triggers COOP `window.closed` errors).
+- **EmulatorJS**: `GamePlayer.svelte` runs EmulatorJS inside a **blob URL iframe** for full isolation. This is critical:
+  - `emulator.min.js` uses top-level `const` declarations that survive script removal — navigating between games causes `SyntaxError: Identifier already declared` if run in the parent window.
+  - `data:` URLs block `localStorage` access — EmulatorJS needs it for save states/language. Blob URLs inherit the page origin and allow storage.
+  - Blob URLs are revoked on cleanup to prevent memory leaks.
 
 ## File Structure
 - `src/lib/firebase.ts` - Firebase init (dynamic env vars)
 - `src/lib/types/game.ts` - Game interface, Platform type, PLATFORM_TO_CORE mapping
+- `src/lib/stores/auth.ts` - Auth state (currentUser, authLoading, signInWithGoogle, logOut)
 - `src/lib/stores/games.ts` - Firestore queries (writable/derived stores)
 - `src/lib/components/` - Hero, GameCard, GameGrid, GamePlayer
 - `src/routes/` - Layout, Home, Games listing, Game detail ([slug])

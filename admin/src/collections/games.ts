@@ -1,84 +1,123 @@
 import { buildCollection } from '@firecms/core';
 
+
 export const gamesCollection = buildCollection({
+
+// const gamesCollection:EntityCollection = {
 	id: 'games',
 	name: 'Games',
-	singularName: 'Game',
 	path: 'games',
-	icon: 'SportsEsports',
+	description: 'Manage your collection of retro video games.',
+	editable: true,
 	properties: {
-		slug: {
-			name: 'Slug',
-			validation: { required: true },
-			dataType: 'string'
-		},
 		title: {
-			name: 'Title',
-			validation: { required: true },
-			dataType: 'string'
-		},
-		platform: {
-			name: 'Platform',
-			validation: { required: true },
+			validation: {
+				required: true,
+			},
 			dataType: 'string',
-			enumValues: {
-				nes: 'NES',
-				snes: 'SNES',
-				genesis: 'Genesis',
-				gba: 'GBA',
-				gb: 'Game Boy',
-				n64: 'N64'
-			}
-		},
-		year: {
-			name: 'Year',
-			validation: { required: true, min: 1970, max: 2010 },
-			dataType: 'number'
+			name: 'Title',
 		},
 		description: {
+			validation: {
+				required: true,
+			},
+			dataType: 'string',
 			name: 'Description',
-			dataType: 'string',
-			markdown: true
 		},
-		romUrl: {
-			name: 'ROM File',
-			validation: { required: true },
-			dataType: 'string',
-			storage: {
-				storagePath: 'roms',
-				acceptedFiles: ['*/*']
-			}
+		featured: {
+			name: 'Featured',
+			validation: {
+				required: true,
+			},
+			dataType: 'boolean',
 		},
-		screenshotUrl: {
-			name: 'Main Screenshot',
+		platform: {
 			dataType: 'string',
+			validation: {
+				required: true,
+			},
+			enumValues: [
+				// Nintendo
+				{ id: 'nes', label: 'NES' },
+				{ id: 'snes', label: 'SNES' },
+				{ id: 'n64', label: 'Nintendo 64' },
+				{ id: 'gb', label: 'Game Boy' },
+				{ id: 'gba', label: 'GBA' },
+				{ id: 'nds', label: 'Nintendo DS' },
+				{ id: 'vb', label: 'Virtual Boy' },
+				// Sega
+				{ id: 'genesis', label: 'Genesis / Mega Drive' },
+				{ id: 'sms', label: 'Master System' },
+				{ id: 'gamegear', label: 'Game Gear' },
+				{ id: 'sega32x', label: 'Sega 32X' },
+				{ id: 'segacd', label: 'Sega CD' },
+				{ id: 'saturn', label: 'Sega Saturn' },
+				// Sony
+				{ id: 'psx', label: 'PlayStation' },
+				{ id: 'psp', label: 'PSP' },
+				// Atari
+				{ id: 'atari2600', label: 'Atari 2600' },
+				{ id: 'atari5200', label: 'Atari 5200' },
+				{ id: 'atari7800', label: 'Atari 7800' },
+				{ id: 'jaguar', label: 'Atari Jaguar' },
+				{ id: 'lynx', label: 'Atari Lynx' },
+				// Other
+				{ id: 'arcade', label: 'Arcade' },
+				{ id: 'mame2003', label: 'MAME 2003' },
+				{ id: '3do', label: '3DO' },
+				{ id: 'coleco', label: 'ColecoVision' },
+			],
+			name: 'Platform',
+		},
+		rom: {
 			storage: {
-				storagePath: 'screenshots',
-				acceptedFiles: ['image/*']
-			}
+				storagePath: "/games/roms",
+				fileName: "{file}"
+			},
+			name: "rom",
+			dataType: "string"
+		},
+			screenshotUrl: {
+			name: 'Screenshoturl',
+			
+			dataType: 'string',
 		},
 		screenshots: {
 			name: 'Screenshots',
 			dataType: 'array',
 			of: {
+				name: 'Screenshots',
 				dataType: 'string',
-				storage: {
-					storagePath: 'screenshots',
-					acceptedFiles: ['image/*']
-				}
-			}
+			},
+		},
+		slug: {
+			name: 'Slug',
+			validation: {
+				required: true,
+			},
+			dataType: 'string',
 		},
 		tags: {
-			name: 'Tags',
-			dataType: 'array',
 			of: {
-				dataType: 'string'
-			}
+				dataType: 'string',
+				name: 'Tags',
+			},
+			dataType: 'array',
+			name: 'Tags',
 		},
-		featured: {
-			name: 'Featured',
-			dataType: 'boolean',
-			defaultValue: false
-		}
-	}
+		year: {
+			name: 'Year',
+			validation: {
+				required: true,
+			},
+			dataType: 'number',
+		},
+		__order: {
+			hideFromCollection: true,
+			dataType: 'number',
+			name: '__Order',
+		},
+	},
+	subcollections: [],
+// }
 });
