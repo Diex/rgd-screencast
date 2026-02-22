@@ -11,6 +11,7 @@
 			<img
 				src={game.screenshotUrl}
 				alt={game.title}
+				loading="lazy"
 				class="h-full w-full object-cover"
 			/>
 		{:else}

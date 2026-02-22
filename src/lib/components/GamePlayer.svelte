@@ -6,6 +6,8 @@
 
 	let { game }: { game: Game } = $props();
 
+	let loadError = $state<string | null>(null);
+
 	const EJS_CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
 	function isAbsoluteUrl(url: string): boolean {
@@ -20,6 +22,7 @@
 	$effect(() => {
 		let cancelled = false;
 		let scriptEl: HTMLScriptElement | null = null;
+		loadError = null;
 
 		resolveRomUrl(game.romUrl).then((url) => {
 			if (cancelled) return;
@@ -34,6 +37,10 @@
 			scriptEl = document.createElement('script');
 			scriptEl.src = `${EJS_CDN}loader.js`;
 			document.body.appendChild(scriptEl);
+		}).catch((err) => {
+			if (cancelled) return;
+			console.error('Failed to load ROM:', err);
+			loadError = 'Failed to load game ROM.';
 		});
 
 		return () => {
@@ -49,4 +56,10 @@
 	});
 </script>
 
-<div id="emulator-container" class="aspect-video w-full max-w-4xl overflow-hidden rounded-lg"></div>
+{#if loadError}
+	<div class="flex aspect-video w-full max-w-4xl items-center justify-center rounded-lg bg-surface-800">
+		<p class="text-error-500">{loadError}</p>
+	</div>
+{:else}
+	<div id="emulator-container" class="aspect-video w-full max-w-4xl overflow-hidden rounded-lg"></div>
+{/if}

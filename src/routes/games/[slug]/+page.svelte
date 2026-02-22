@@ -13,11 +13,16 @@
 		const slug = $page.params.slug;
 		loading = true;
 		error = false;
-		fetchGameBySlug(slug).then((result) => {
-			game = result;
-			loading = false;
-			if (!result) error = true;
-		});
+		fetchGameBySlug(slug)
+			.then((result) => {
+				game = result;
+				loading = false;
+				if (!result) error = true;
+			})
+			.catch(() => {
+				loading = false;
+				error = true;
+			});
 	});
 </script>
 
@@ -67,10 +72,11 @@
 			<section class="space-y-4">
 				<h2 class="h3 font-bold">Screenshots</h2>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each game.screenshots as screenshot}
+					{#each game.screenshots as screenshot, i}
 						<img
 							src={screenshot}
-							alt="{game.title} screenshot"
+							alt="{game.title} screenshot {i + 1} of {game.screenshots.length}"
+							loading="lazy"
 							class="w-full rounded-lg object-cover"
 						/>
 					{/each}

@@ -11,7 +11,10 @@ export const featuredGames = derived(games, ($games) =>
 	$games.filter((game) => game.featured)
 );
 
-export async function fetchGames(): Promise<void> {
+let fetched = false;
+
+export async function fetchGames(force = false): Promise<void> {
+	if (fetched && !force) return;
 	loading.set(true);
 	error.set(null);
 	try {
@@ -21,6 +24,7 @@ export async function fetchGames(): Promise<void> {
 			result.push({ id: doc.id, ...doc.data() } as Game);
 		});
 		games.set(result);
+		fetched = true;
 	} catch (e) {
 		console.error('Failed to fetch games:', e);
 		error.set(e instanceof Error ? e.message : 'Failed to load games');

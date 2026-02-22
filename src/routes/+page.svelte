@@ -18,9 +18,11 @@
 	{:else if $error}
 		<div class="py-12 text-center">
 			<p class="text-error-500">Error: {$error}</p>
-			<button class="btn preset-filled-primary-500 mt-4" onclick={() => fetchGames()}>Retry</button>
+			<button class="btn preset-filled-primary-500 mt-4" onclick={() => fetchGames(true)}>Retry</button>
 		</div>
 	{:else if $featuredGames.length > 0}
 		<GameGrid title="Featured Games" games={$featuredGames} />
+	{:else}
+		<p class="py-12 text-center text-surface-400">No featured games yet.</p>
 	{/if}
 </div>

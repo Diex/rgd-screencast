@@ -21,7 +21,7 @@
 	{:else if $error}
 		<div class="py-12 text-center">
 			<p class="text-error-500">Error: {$error}</p>
-			<button class="btn preset-filled-primary-500 mt-4" onclick={() => fetchGames()}>Retry</button>
+			<button class="btn preset-filled-primary-500 mt-4" onclick={() => fetchGames(true)}>Retry</button>
 		</div>
 	{:else if $games.length === 0}
 		<p class="text-surface-400">No games found.</p>
