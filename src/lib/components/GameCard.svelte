@@ -1,18 +1,31 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
 	import { getLabelForPlatform, getAverageRating, getRatingCount } from '$lib/types/game';
+	import { ref, getDownloadURL } from 'firebase/storage';
+	import { storage } from '$lib/firebase';
 
 	let { game }: { game: Game } = $props();
 
 	let average = $derived(getAverageRating(game));
 	let count = $derived(getRatingCount(game));
+	let thumbnailUrl = $state<string | null>(null);
+
+	$effect(() => {
+		const path = game.screenshots?.[0];
+		if (!path) return;
+		if (path.startsWith('http')) {
+			thumbnailUrl = path;
+		} else {
+			getDownloadURL(ref(storage, path)).then((url) => (thumbnailUrl = url));
+		}
+	});
 </script>
 
 <a href="/games/{game.slug}" class="card card-hover overflow-hidden">
 	<div class="aspect-video w-full overflow-hidden bg-surface-800">
-		{#if game.screenshotUrl}
+		{#if thumbnailUrl}
 			<img
-				src={game.screenshotUrl}
+				src={thumbnailUrl}
 				alt={game.title}
 				loading="lazy"
 				class="h-full w-full object-cover"

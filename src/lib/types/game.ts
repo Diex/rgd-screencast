@@ -66,7 +66,6 @@ export interface Game {
 	year: number;
 	description: string;
 	rom: string;
-	screenshotUrl: string;
 	screenshots: string[];
 	tags: string[];
 	featured: boolean;

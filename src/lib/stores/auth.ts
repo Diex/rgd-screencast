@@ -2,6 +2,8 @@ import { writable } from 'svelte/store';
 import {
 	onAuthStateChanged,
 	signInWithPopup,
+	signInWithEmailAndPassword,
+	createUserWithEmailAndPassword,
 	signOut,
 	GoogleAuthProvider,
 	type User
@@ -24,6 +26,14 @@ export async function signInWithGoogle(): Promise<void> {
 	} catch (e) {
 		console.error('Sign-in failed:', e);
 	}
+}
+
+export async function signUpWithEmail(email: string, password: string): Promise<void> {
+	await createUserWithEmailAndPassword(auth, email, password);
+}
+
+export async function signInWithEmail(email: string, password: string): Promise<void> {
+	await signInWithEmailAndPassword(auth, email, password);
 }
 
 export async function logOut(): Promise<void> {

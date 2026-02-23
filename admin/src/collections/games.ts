@@ -3,7 +3,7 @@ import { buildCollection } from '@firecms/core';
 
 export const gamesCollection = buildCollection({
 
-// const gamesCollection:EntityCollection = {
+	// const gamesCollection:EntityCollection = {
 	id: 'games',
 	name: 'Games',
 	path: 'games',
@@ -77,17 +77,20 @@ export const gamesCollection = buildCollection({
 			name: "rom",
 			dataType: "string"
 		},
-			screenshotUrl: {
-			name: 'Screenshoturl',
-			
-			dataType: 'string',
-		},
+
 		screenshots: {
 			name: 'Screenshots',
 			dataType: 'array',
 			of: {
-				name: 'Screenshots',
 				dataType: 'string',
+				storage: {
+					storagePath: '/games/screenshots',
+					fileName: '{file}',
+					acceptedFiles: ['image/*'],
+					metadata: {
+						cacheControl: "max-age=1000000"
+					}
+				},
 			},
 		},
 		slug: {
@@ -125,5 +128,5 @@ export const gamesCollection = buildCollection({
 		},
 	},
 	subcollections: [],
-// }
+	// }
 });
