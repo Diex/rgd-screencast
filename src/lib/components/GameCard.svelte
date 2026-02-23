@@ -1,8 +1,11 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
-	import { getLabelForPlatform } from '$lib/types/game';
+	import { getLabelForPlatform, getAverageRating, getRatingCount } from '$lib/types/game';
 
 	let { game }: { game: Game } = $props();
+
+	let average = $derived(getAverageRating(game));
+	let count = $derived(getRatingCount(game));
 </script>
 
 <a href="/games/{game.slug}" class="card card-hover overflow-hidden">
@@ -30,6 +33,9 @@
 			{#each game.tags as tag}
 				<span class="badge preset-tonal-surface text-xs">{tag}</span>
 			{/each}
+			{#if count > 0}
+				<span class="badge preset-tonal-warning text-xs">&#9733; {average.toFixed(1)}</span>
+			{/if}
 		</div>
 	</div>
 </a>

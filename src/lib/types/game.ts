@@ -70,4 +70,19 @@ export interface Game {
 	screenshots: string[];
 	tags: string[];
 	featured: boolean;
+	votes?: Record<string, number>;
+}
+
+export function getAverageRating(game: Game): number {
+	const values = Object.values(game.votes ?? {});
+	if (values.length === 0) return 0;
+	return values.reduce((sum, v) => sum + v, 0) / values.length;
+}
+
+export function getRatingCount(game: Game): number {
+	return Object.keys(game.votes ?? {}).length;
+}
+
+export function getUserRating(game: Game, uid: string): number {
+	return game.votes?.[uid] ?? 0;
 }

@@ -112,6 +112,12 @@ export const gamesCollection = buildCollection({
 			},
 			dataType: 'number',
 		},
+		votes: {
+			name: 'Votes',
+			dataType: 'map',
+			readOnly: true,
+			description: 'User ratings (uid → 1-5 stars). Managed by the frontend, not editable here.',
+		},
 		__order: {
 			hideFromCollection: true,
 			dataType: 'number',

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import GamePlayer from '$lib/components/GamePlayer.svelte';
+	import StarRating from '$lib/components/StarRating.svelte';
 	import { getLabelForPlatform } from '$lib/types/game';
 	import { fetchGameBySlug } from '$lib/stores/games';
 	import type { Game } from '$lib/types/game';
@@ -58,7 +59,7 @@
 
 		<!-- Info -->
 		<div class="card p-6 space-y-4">
-			<div class="flex flex-wrap gap-3">
+			<div class="flex flex-wrap items-center gap-3">
 				<span class="badge preset-filled-primary-500">
 					{getLabelForPlatform(game.platform)}
 				</span>
@@ -67,6 +68,8 @@
 					<span class="badge preset-tonal-surface">{tag}</span>
 				{/each}
 			</div>
+
+			<StarRating {game} />
 
 			{#if game.description}
 				<p class="text-surface-300 whitespace-pre-line">{game.description}</p>
