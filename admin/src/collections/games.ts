@@ -66,6 +66,7 @@ export const gamesCollection = buildCollection({
 				{ id: 'mame2003', label: 'MAME 2003' },
 				{ id: '3do', label: '3DO' },
 				{ id: 'coleco', label: 'ColecoVision' },
+				{ id: 'msx', label: 'MSX' },
 			],
 			name: 'Platform',
 		},

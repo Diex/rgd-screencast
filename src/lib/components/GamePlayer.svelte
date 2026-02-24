@@ -20,6 +20,22 @@
 		return getDownloadURL(ref(storage, romUrl));
 	}
 
+	function buildMsxIframeBlobUrl(romUrl: string): string {
+		const wmsxUrl = `${window.location.origin}/wmsx.js`;
+		const html = `<!DOCTYPE html>
+<html><head>
+<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
+</head><body>
+<div id="wmsx-screen" style="width:100%;height:100%"></div>
+<script src="${wmsxUrl}"><\/script>
+<script>
+  WMSX.CARTRIDGE1_URL = '${romUrl}';
+  WMSX.SCREEN_ELEMENT_ID = 'wmsx-screen';
+<\/script>
+</body></html>`;
+		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+	}
+
 	function buildIframeBlobUrl(romUrl: string, core: string): string {
 		const html = `<!DOCTYPE html>
 <html><head>
@@ -43,7 +59,8 @@
 		loadError = null;
 		iframeSrc = null;
 
-		const core = getCoreForPlatform(game.platform);
+		const isMsx = game.platform === 'msx';
+		const core = isMsx ? 'webmsx' : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
 			return;
@@ -51,7 +68,7 @@
 
 		resolveRomUrl(game.rom).then((url) => {
 			if (cancelled) return;
-			iframeSrc = buildIframeBlobUrl(url, core);
+			iframeSrc = isMsx ? buildMsxIframeBlobUrl(url) : buildIframeBlobUrl(url, core);
 		}).catch((err) => {
 			if (cancelled) return;
 			console.error('Failed to load ROM:', err);

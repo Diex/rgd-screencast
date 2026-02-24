@@ -39,6 +39,7 @@ export const PLATFORMS = {
 	arcade: { core: 'arcade', label: 'Arcade' },
 	coleco: { core: 'coleco', label: 'ColecoVision' },
 	mame2003: { core: 'mame2003', label: 'MAME 2003' },
+	msx: { core: 'webmsx', label: 'MSX' },
 } as const;
 
 export type Platform = keyof typeof PLATFORMS;
