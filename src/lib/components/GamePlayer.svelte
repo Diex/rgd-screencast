@@ -37,22 +37,46 @@
 	}
 
 	function buildJsSpeccy3IframeBlobUrl(romUrl: string): string {
+		const jsspeccy = `${window.location.origin}/jsspeccy.js`;
 		const html = `<!DOCTYPE html>
 <html><head>
-<style>*{margin:0;padding:0}body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh}#jsspeccy{width:100%;height:100%}</style>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000}#jsspeccy,#jsspeccy>div{width:100%!important;height:100%!important;display:flex!important;justify-content:center!important;align-items:center!important}#jsspeccy canvas{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}</style>
 </head><body>
 <div id="jsspeccy"></div>
-<script src="https://cdn.jsdelivr.net/gh/gasman/jsspeccy3@3.0.1/jsspeccy.js"><\/script>
+<script src="${jsspeccy}"><\/script>
 <script>
-  window.onload = function() {
+  (async function() {
+    const romData = await fetch('${romUrl}').then(function(r) { return r.arrayBuffer(); });
+    const _fetch = window.fetch;
+    window.fetch = function(url, opts) {
+      if (url === 'rom://game.tap') return Promise.resolve(new Response(romData));
+      return _fetch(url, opts);
+    };
     JSSpeccy(document.getElementById('jsspeccy'), {
       zoom: 2,
       autoStart: true,
       autoLoadTapes: true,
       tapeAutoLoadMode: 'usr0',
-      openUrl: '${romUrl}'
+      uiEnabled: false,
+      openUrl: 'rom://game.tap'
     });
-  };
+  })();
+<\/script>
+</body></html>`;
+		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+	}
+
+	function buildJsDosIframeBlobUrl(romUrl: string): string {
+		const html = `<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000}#dos{width:100%;height:100%}</style>
+<link rel="stylesheet" href="https://v8.js-dos.com/latest/js-dos.css">
+<script src="https://v8.js-dos.com/latest/js-dos.js"><\/script>
+</head><body>
+<div id="dos"></div>
+<script>
+  Dos(document.getElementById('dos'), { url: '${romUrl}', autoStart: true, kiosk: true });
 <\/script>
 </body></html>`;
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
@@ -83,7 +107,8 @@
 
 		const isMsx = game.platform === 'msx';
 		const isZxSpectrum = game.platform === 'zxspectrum';
-		const core = (isMsx || isZxSpectrum) ? game.platform : getCoreForPlatform(game.platform);
+		const isDos = game.platform === 'dos';
+		const core = (isMsx || isZxSpectrum || isDos) ? game.platform : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
 			return;
@@ -95,6 +120,8 @@
 				iframeSrc = buildMsxIframeBlobUrl(url);
 			} else if (isZxSpectrum) {
 				iframeSrc = buildJsSpeccy3IframeBlobUrl(url);
+			} else if (isDos) {
+				iframeSrc = buildJsDosIframeBlobUrl(url);
 			} else {
 				iframeSrc = buildIframeBlobUrl(url, core);
 			}
