@@ -40,6 +40,7 @@ export const PLATFORMS = {
 	coleco: { core: 'coleco', label: 'ColecoVision' },
 	mame2003: { core: 'mame2003', label: 'MAME 2003' },
 	msx: { core: 'webmsx', label: 'MSX' },
+	zxspectrum: { core: 'zxspectrum', label: 'ZX Spectrum' },
 } as const;
 
 export type Platform = keyof typeof PLATFORMS;

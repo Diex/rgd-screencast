@@ -36,6 +36,28 @@
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
 	}
 
+	function buildJsSpeccy3IframeBlobUrl(romUrl: string): string {
+		const html = `<!DOCTYPE html>
+<html><head>
+<style>*{margin:0;padding:0}body{background:#000;display:flex;justify-content:center;align-items:center;height:100vh}#jsspeccy{width:100%;height:100%}</style>
+</head><body>
+<div id="jsspeccy"></div>
+<script src="https://cdn.jsdelivr.net/gh/gasman/jsspeccy3@3.0.1/jsspeccy.js"><\/script>
+<script>
+  window.onload = function() {
+    JSSpeccy(document.getElementById('jsspeccy'), {
+      zoom: 2,
+      autoStart: true,
+      autoLoadTapes: true,
+      tapeAutoLoadMode: 'usr0',
+      openUrl: '${romUrl}'
+    });
+  };
+<\/script>
+</body></html>`;
+		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+	}
+
 	function buildIframeBlobUrl(romUrl: string, core: string): string {
 		const html = `<!DOCTYPE html>
 <html><head>
@@ -60,7 +82,8 @@
 		iframeSrc = null;
 
 		const isMsx = game.platform === 'msx';
-		const core = isMsx ? 'webmsx' : getCoreForPlatform(game.platform);
+		const isZxSpectrum = game.platform === 'zxspectrum';
+		const core = (isMsx || isZxSpectrum) ? game.platform : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
 			return;
@@ -68,7 +91,13 @@
 
 		resolveRomUrl(game.rom).then((url) => {
 			if (cancelled) return;
-			iframeSrc = isMsx ? buildMsxIframeBlobUrl(url) : buildIframeBlobUrl(url, core);
+			if (isMsx) {
+				iframeSrc = buildMsxIframeBlobUrl(url);
+			} else if (isZxSpectrum) {
+				iframeSrc = buildJsSpeccy3IframeBlobUrl(url);
+			} else {
+				iframeSrc = buildIframeBlobUrl(url, core);
+			}
 		}).catch((err) => {
 			if (cancelled) return;
 			console.error('Failed to load ROM:', err);
