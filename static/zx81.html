@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; }
+  #status { color: #fff; font-family: monospace; font-size: 12px; position: absolute; top: 4px; left: 4px; }
+</style>
+</head>
+<body>
+<canvas id="emulator_canvas"></canvas>
+<span id="emulator_status" style="display:none"></span>
+<span id="status" style="display:none"></span>
+<script>
+  (async function() {
+    const FAKE_TZX = '/zx81-game.tzx';
+    const FAKE_HEX = FAKE_TZX + '.hex';
+    const statusEl = document.getElementById('status');
+
+    const params = new URLSearchParams(window.location.search);
+    const tzxUrl = params.get('tzx');
+
+    if (tzxUrl) {
+      let hexData;
+      try {
+        const resp = await fetch(tzxUrl);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const bytes = new Uint8Array(await resp.arrayBuffer());
+        hexData = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+      } catch (e) {
+        statusEl.textContent = 'Failed to load ROM: ' + e.message;
+        statusEl.style.display = '';
+        return;
+      }
+
+      // XHR wrapper: intercept the .hex request the emulator makes for the game tape.
+      // The emulator fetches `url + ".hex"` and expects a hex-encoded response body.
+      const OrigXHR = window.XMLHttpRequest;
+      window.XMLHttpRequest = function() {
+        const real = new OrigXHR();
+        let isFake = false;
+        let _onrsc = null;
+
+        Object.defineProperty(this, 'onreadystatechange', {
+          get() { return isFake ? _onrsc : real.onreadystatechange; },
+          set(v) { if (isFake) _onrsc = v; else real.onreadystatechange = v; }
+        });
+
+        ['readyState', 'status', 'statusText'].forEach(prop => {
+          Object.defineProperty(this, prop, {
+            get() { return real[prop]; },
+          });
+        });
+
+        this.open = function(method, url, async) {
+          isFake = (url === FAKE_HEX);
+          if (!isFake) real.open(method, url, async);
+        };
+
+        this.send = function(body) {
+          if (isFake) {
+            setTimeout(() => {
+              if (_onrsc) _onrsc.call({ readyState: 4, status: 200, responseText: hexData });
+            }, 0);
+          } else {
+            real.send(body);
+          }
+        };
+      };
+
+      history.replaceState(null, '', '?tzx=' + encodeURIComponent(FAKE_TZX));
+    }
+
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = './zx81_emu.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.body.appendChild(s);
+    });
+
+    new ZX81EmulatorUI('emulator_canvas', 'emulator_status');
+  })();
+</script>
+</body>
+</html>

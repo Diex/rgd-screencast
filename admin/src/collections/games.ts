@@ -68,14 +68,15 @@ export const gamesCollection = buildCollection({
 				{ id: 'coleco', label: 'ColecoVision' },
 				{ id: 'msx', label: 'MSX' },
 				{ id: 'zxspectrum', label: 'ZX Spectrum' },
-				{ id: 'dos', label: 'PC / DOS' },
+					{ id: 'dos', label: 'PC / DOS' },
+				{ id: 'zx81', label: 'ZX81' },
 			],
 			name: 'Platform',
 		},
 		rom: {
 			storage: {
 				storagePath: "/games/roms",
-				fileName: "{file}"
+				fileName: "{file}",
 			},
 			name: "rom",
 			dataType: "string"

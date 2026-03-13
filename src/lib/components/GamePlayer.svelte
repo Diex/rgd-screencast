@@ -82,7 +82,13 @@
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
 	}
 
+	const BIOS_MAP: Partial<Record<string, string>> = {
+		coleco: `${window.location.origin}/colecovision.rom`,
+	};
+
 	function buildIframeBlobUrl(romUrl: string, core: string): string {
+		const biosUrl = BIOS_MAP[core];
+		const biosLine = biosUrl ? `\n  var EJS_biosUrl = '${biosUrl}';` : '';
 		const html = `<!DOCTYPE html>
 <html><head>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
@@ -91,9 +97,13 @@
 <script>
   var EJS_player = '#game';
   var EJS_core = '${core}';
-  var EJS_gameUrl = '${romUrl}';
+  var EJS_gameUrl = '${romUrl}';${biosLine}
   var EJS_pathtodata = '${EJS_CDN}';
   var EJS_startOnLoaded = true;
+  var EJS_ready = function() {
+    document.querySelector('canvas')?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+    document.querySelector('#game')?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
+  };
 <\/script>
 <script src="${EJS_CDN}loader.js"><\/script>
 </body></html>`;
@@ -108,7 +118,8 @@
 		const isMsx = game.platform === 'msx';
 		const isZxSpectrum = game.platform === 'zxspectrum';
 		const isDos = game.platform === 'dos';
-		const core = (isMsx || isZxSpectrum || isDos) ? game.platform : getCoreForPlatform(game.platform);
+		const isZx81 = game.platform === 'zx81';
+		const core = (isMsx || isZxSpectrum || isDos || isZx81) ? game.platform : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
 			return;
@@ -122,6 +133,8 @@
 				iframeSrc = buildJsSpeccy3IframeBlobUrl(url);
 			} else if (isDos) {
 				iframeSrc = buildJsDosIframeBlobUrl(url);
+			} else if (isZx81) {
+				iframeSrc = `/zx81.html?tzx=${encodeURIComponent(url)}`;
 			} else {
 				iframeSrc = buildIframeBlobUrl(url, core);
 			}
@@ -133,7 +146,7 @@
 
 		return () => {
 			cancelled = true;
-			if (iframeSrc) URL.revokeObjectURL(iframeSrc);
+			if (iframeSrc && iframeSrc.startsWith('blob:')) URL.revokeObjectURL(iframeSrc);
 		};
 	});
 </script>

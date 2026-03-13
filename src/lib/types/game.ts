@@ -42,6 +42,7 @@ export const PLATFORMS = {
 	msx: { core: 'webmsx', label: 'MSX' },
 	zxspectrum: { core: 'zxspectrum', label: 'ZX Spectrum' },
 	dos: { core: 'dosbox', label: 'PC / DOS' },
+	zx81: { core: 'zx81', label: 'ZX81' },
 } as const;
 
 export type Platform = keyof typeof PLATFORMS;
