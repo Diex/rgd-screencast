@@ -8,6 +8,9 @@
 
 	let loadError = $state<string | null>(null);
 	let iframeSrc = $state<string | null>(null);
+	let romUrl = $state<string | null>(null);
+	let posterUrl = $state<string | null>(null);
+	let loading = $state(true);
 
 	const EJS_CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
@@ -15,12 +18,12 @@
 		return url.startsWith('http://') || url.startsWith('https://');
 	}
 
-	async function resolveRomUrl(romUrl: string): Promise<string> {
-		if (isAbsoluteUrl(romUrl)) return romUrl;
-		return getDownloadURL(ref(storage, romUrl));
+	async function resolveRomUrl(url: string): Promise<string> {
+		if (isAbsoluteUrl(url)) return url;
+		return getDownloadURL(ref(storage, url));
 	}
 
-	function buildMsxIframeBlobUrl(romUrl: string): string {
+	function buildMsxIframeBlobUrl(url: string): string {
 		const wmsxUrl = `${window.location.origin}/wmsx.js`;
 		const html = `<!DOCTYPE html>
 <html><head>
@@ -29,14 +32,14 @@
 <div id="wmsx-screen" style="width:100%;height:100%"></div>
 <script src="${wmsxUrl}"><\/script>
 <script>
-  WMSX.CARTRIDGE1_URL = '${romUrl}';
+  WMSX.CARTRIDGE1_URL = '${url}';
   WMSX.SCREEN_ELEMENT_ID = 'wmsx-screen';
 <\/script>
 </body></html>`;
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
 	}
 
-	function buildJsSpeccy3IframeBlobUrl(romUrl: string): string {
+	function buildJsSpeccy3IframeBlobUrl(url: string): string {
 		const jsspeccy = `${window.location.origin}/jsspeccy.js`;
 		const html = `<!DOCTYPE html>
 <html><head>
@@ -46,7 +49,7 @@
 <script src="${jsspeccy}"><\/script>
 <script>
   (async function() {
-    const romData = await fetch('${romUrl}').then(function(r) { return r.arrayBuffer(); });
+    const romData = await fetch('${url}').then(function(r) { return r.arrayBuffer(); });
     const _fetch = window.fetch;
     window.fetch = function(url, opts) {
       if (url === 'rom://game.tap') return Promise.resolve(new Response(romData));
@@ -66,7 +69,7 @@
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
 	}
 
-	function buildJsDosIframeBlobUrl(romUrl: string): string {
+	function buildJsDosIframeBlobUrl(url: string): string {
 		const html = `<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8">
@@ -76,7 +79,7 @@
 </head><body>
 <div id="dos"></div>
 <script>
-  Dos(document.getElementById('dos'), { url: '${romUrl}', autoStart: true, kiosk: true });
+  Dos(document.getElementById('dos'), { url: '${url}', autoStart: true, kiosk: true });
 <\/script>
 </body></html>`;
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
@@ -86,7 +89,7 @@
 		coleco: `${window.location.origin}/colecovision.rom`,
 	};
 
-	function buildIframeBlobUrl(romUrl: string, core: string): string {
+	function buildIframeBlobUrl(url: string, core: string): string {
 		const biosUrl = BIOS_MAP[core];
 		const biosLine = biosUrl ? `\n  var EJS_biosUrl = '${biosUrl}';` : '';
 		const html = `<!DOCTYPE html>
@@ -97,13 +100,10 @@
 <script>
   var EJS_player = '#game';
   var EJS_core = '${core}';
-  var EJS_gameUrl = '${romUrl}';${biosLine}
+  var EJS_gameUrl = '${url}';${biosLine}
   var EJS_pathtodata = '${EJS_CDN}';
+  var EJS_threads = false;
   var EJS_startOnLoaded = true;
-  var EJS_ready = function() {
-    document.querySelector('canvas')?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-    document.querySelector('#game')?.dispatchEvent(new MouseEvent('click', {bubbles: true}));
-  };
 <\/script>
 <script src="${EJS_CDN}loader.js"><\/script>
 </body></html>`;
@@ -114,6 +114,9 @@
 		let cancelled = false;
 		loadError = null;
 		iframeSrc = null;
+		romUrl = null;
+		posterUrl = null;
+		loading = true;
 
 		const isMsx = game.platform === 'msx';
 		const isZxSpectrum = game.platform === 'zxspectrum';
@@ -122,26 +125,28 @@
 		const core = (isMsx || isZxSpectrum || isDos || isZx81) ? game.platform : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
+			loading = false;
 			return;
+		}
+
+		const firstScreenshot = game.screenshots?.[0];
+		if (firstScreenshot) {
+			resolveRomUrl(firstScreenshot).then((url) => { if (!cancelled) posterUrl = url; }).catch(() => {});
 		}
 
 		resolveRomUrl(game.rom).then((url) => {
 			if (cancelled) return;
-			if (isMsx) {
-				iframeSrc = buildMsxIframeBlobUrl(url);
-			} else if (isZxSpectrum) {
-				iframeSrc = buildJsSpeccy3IframeBlobUrl(url);
-			} else if (isDos) {
-				iframeSrc = buildJsDosIframeBlobUrl(url);
-			} else if (isZx81) {
+			loading = false;
+			if (isZx81) {
 				iframeSrc = `/zx81.html?tzx=${encodeURIComponent(url)}`;
 			} else {
-				iframeSrc = buildIframeBlobUrl(url, core);
+				romUrl = url;
 			}
 		}).catch((err) => {
 			if (cancelled) return;
 			console.error('Failed to load ROM:', err);
 			loadError = 'Failed to load game ROM.';
+			loading = false;
 		});
 
 		return () => {
@@ -149,6 +154,19 @@
 			if (iframeSrc && iframeSrc.startsWith('blob:')) URL.revokeObjectURL(iframeSrc);
 		};
 	});
+
+	function launch() {
+		if (!romUrl) return;
+		const isMsx = game.platform === 'msx';
+		const isZxSpectrum = game.platform === 'zxspectrum';
+		const isDos = game.platform === 'dos';
+		const core = (isMsx || isZxSpectrum || isDos) ? game.platform : getCoreForPlatform(game.platform)!;
+
+		if (isMsx) iframeSrc = buildMsxIframeBlobUrl(romUrl);
+		else if (isZxSpectrum) iframeSrc = buildJsSpeccy3IframeBlobUrl(romUrl);
+		else if (isDos) iframeSrc = buildJsDosIframeBlobUrl(romUrl);
+		else iframeSrc = buildIframeBlobUrl(romUrl, core);
+	}
 </script>
 
 {#if loadError}
@@ -162,8 +180,26 @@
 		title="{game.title} emulator"
 		allow="autoplay; gamepad"
 	></iframe>
-{:else}
+{:else if loading}
 	<div class="flex aspect-video w-full max-w-4xl items-center justify-center rounded-lg bg-surface-800">
 		<p class="text-surface-400">Loading emulator...</p>
 	</div>
+{:else if romUrl}
+	<button
+		onclick={launch}
+		class="relative flex aspect-video w-full max-w-4xl items-center justify-center overflow-hidden rounded-lg bg-surface-900"
+		aria-label="Play {game.title}"
+	>
+		{#if posterUrl}
+			<img src={posterUrl} alt="" class="absolute inset-0 h-full w-full object-cover opacity-40" />
+		{/if}
+		<div class="relative flex flex-col items-center gap-3">
+			<div class="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-10 w-10 translate-x-0.5 text-white">
+					<path d="M8 5v14l11-7z"/>
+				</svg>
+			</div>
+			<span class="text-sm font-medium text-white/80">Click to play</span>
+		</div>
+	</button>
 {/if}

@@ -70,6 +70,8 @@ export const gamesCollection = buildCollection({
 				{ id: 'zxspectrum', label: 'ZX Spectrum' },
 					{ id: 'dos', label: 'PC / DOS' },
 				{ id: 'zx81', label: 'ZX81' },
+				// Commodore
+				{ id: 'c64', label: 'Commodore 64' },
 			],
 			name: 'Platform',
 		},

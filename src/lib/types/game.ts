@@ -12,7 +12,7 @@ export const PLATFORMS = {
 	nds: { core: 'nds', label: 'Nintendo DS' },
 	vb: { core: 'vb', label: 'Virtual Boy' },
 	// Sega
-	genesis: { core: 'genesis', label: 'Genesis / Mega Drive' },
+	genesis: { core: 'genesis_plus_gx', label: 'Genesis / Mega Drive' },
 	sms: { core: 'sms', label: 'Master System' },
 	gamegear: { core: 'gamegear', label: 'Game Gear' },
 	sega32x: { core: 'sega32x', label: 'Sega 32X' },
