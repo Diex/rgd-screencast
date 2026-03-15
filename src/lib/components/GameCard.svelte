@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
 	import { getLabelForPlatform, getAverageRating, getRatingCount } from '$lib/types/game';
-	import { ref, getDownloadURL } from 'firebase/storage';
-	import { storage } from '$lib/firebase';
+	import { resolveStorageUrl } from '$lib/utils/storage';
 
 	let { game }: { game: Game } = $props();
 
@@ -13,11 +12,7 @@
 	$effect(() => {
 		const path = game.screenshots?.[0];
 		if (!path) return;
-		if (path.startsWith('http')) {
-			thumbnailUrl = path;
-		} else {
-			getDownloadURL(ref(storage, path)).then((url) => (thumbnailUrl = url));
-		}
+		resolveStorageUrl(path).then((url) => (thumbnailUrl = url)).catch(() => {});
 	});
 </script>
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
 	import { getCoreForPlatform } from '$lib/types/game';
-	import { ref, getDownloadURL } from 'firebase/storage';
-	import { storage } from '$lib/firebase';
+	import { resolveStorageUrl } from '$lib/utils/storage';
 
 	let { game }: { game: Game } = $props();
 
@@ -14,13 +13,8 @@
 
 	const EJS_CDN = 'https://cdn.emulatorjs.org/stable/data/';
 
-	function isAbsoluteUrl(url: string): boolean {
-		return url.startsWith('http://') || url.startsWith('https://');
-	}
-
-	async function resolveRomUrl(url: string): Promise<string> {
-		if (isAbsoluteUrl(url)) return url;
-		return getDownloadURL(ref(storage, url));
+	function isCustomEmulator(platform: string): boolean {
+		return platform === 'msx' || platform === 'zxspectrum' || platform === 'dos' || platform === 'zx81';
 	}
 
 	function buildMsxIframeBlobUrl(url: string): string {
@@ -118,11 +112,8 @@
 		posterUrl = null;
 		loading = true;
 
-		const isMsx = game.platform === 'msx';
-		const isZxSpectrum = game.platform === 'zxspectrum';
-		const isDos = game.platform === 'dos';
 		const isZx81 = game.platform === 'zx81';
-		const core = (isMsx || isZxSpectrum || isDos || isZx81) ? game.platform : getCoreForPlatform(game.platform);
+		const core = isCustomEmulator(game.platform) ? game.platform : getCoreForPlatform(game.platform);
 		if (!core) {
 			loadError = `Unsupported platform: "${game.platform ?? 'unknown'}"`;
 			loading = false;
@@ -131,10 +122,10 @@
 
 		const firstScreenshot = game.screenshots?.[0];
 		if (firstScreenshot) {
-			resolveRomUrl(firstScreenshot).then((url) => { if (!cancelled) posterUrl = url; }).catch(() => {});
+			resolveStorageUrl(firstScreenshot).then((url) => { if (!cancelled) posterUrl = url; }).catch(() => {});
 		}
 
-		resolveRomUrl(game.rom).then((url) => {
+		resolveStorageUrl(game.rom).then((url) => {
 			if (cancelled) return;
 			loading = false;
 			if (isZx81) {
@@ -157,14 +148,12 @@
 
 	function launch() {
 		if (!romUrl) return;
-		const isMsx = game.platform === 'msx';
-		const isZxSpectrum = game.platform === 'zxspectrum';
-		const isDos = game.platform === 'dos';
-		const core = (isMsx || isZxSpectrum || isDos) ? game.platform : getCoreForPlatform(game.platform)!;
+		if (iframeSrc?.startsWith('blob:')) URL.revokeObjectURL(iframeSrc);
+		const core = isCustomEmulator(game.platform) ? game.platform : getCoreForPlatform(game.platform)!;
 
-		if (isMsx) iframeSrc = buildMsxIframeBlobUrl(romUrl);
-		else if (isZxSpectrum) iframeSrc = buildJsSpeccy3IframeBlobUrl(romUrl);
-		else if (isDos) iframeSrc = buildJsDosIframeBlobUrl(romUrl);
+		if (game.platform === 'msx') iframeSrc = buildMsxIframeBlobUrl(romUrl);
+		else if (game.platform === 'zxspectrum') iframeSrc = buildJsSpeccy3IframeBlobUrl(romUrl);
+		else if (game.platform === 'dos') iframeSrc = buildJsDosIframeBlobUrl(romUrl);
 		else iframeSrc = buildIframeBlobUrl(romUrl, core);
 	}
 </script>

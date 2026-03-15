@@ -77,7 +77,7 @@
 		</div>
 
 		<!-- Screenshots Gallery -->
-		{#if game.screenshots && game.screenshots.length > 0}
+		<!-- {#if game.screenshots && game.screenshots.length > 0}
 			<section class="space-y-4">
 				<h2 class="h3 font-bold">Screenshots</h2>
 				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -91,6 +91,6 @@
 					{/each}
 				</div>
 			</section>
-		{/if}
+		{/if} -->
 	</div>
 {/if}
