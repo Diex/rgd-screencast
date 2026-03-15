@@ -11,7 +11,7 @@
 	let error = $state(false);
 
 	$effect(() => {
-		const slug = $page.params.slug;
+		const slug = $page.params.slug ?? '';
 		let cancelled = false;
 		loading = true;
 		error = false;
@@ -75,22 +75,5 @@
 				<p class="text-surface-300 whitespace-pre-line">{game.description}</p>
 			{/if}
 		</div>
-
-		<!-- Screenshots Gallery -->
-		<!-- {#if game.screenshots && game.screenshots.length > 0}
-			<section class="space-y-4">
-				<h2 class="h3 font-bold">Screenshots</h2>
-				<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-					{#each game.screenshots as screenshot, i}
-						<img
-							src={screenshot}
-							alt="{game.title} screenshot {i + 1} of {game.screenshots.length}"
-							loading="lazy"
-							class="w-full rounded-lg object-cover"
-						/>
-					{/each}
-				</div>
-			</section>
-		{/if} -->
 	</div>
 {/if}

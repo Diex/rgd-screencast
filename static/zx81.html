@@ -16,6 +16,7 @@
     const FAKE_TZX = '/zx81-game.tzx';
     const FAKE_HEX = FAKE_TZX + '.hex';
     const statusEl = document.getElementById('status');
+    window.statusLabel = statusEl;
 
     const params = new URLSearchParams(window.location.search);
     const tzxUrl = params.get('tzx');
@@ -46,9 +47,10 @@
           set(v) { if (isFake) _onrsc = v; else real.onreadystatechange = v; }
         });
 
-        ['readyState', 'status', 'statusText'].forEach(prop => {
+        ['readyState', 'status', 'statusText', 'response', 'responseText', 'responseType'].forEach(prop => {
           Object.defineProperty(this, prop, {
             get() { return real[prop]; },
+            set(v) { if (prop === 'responseType') real[prop] = v; },
           });
         });
 
