@@ -35,6 +35,8 @@
 
 	function buildJsSpeccy3IframeBlobUrl(url: string): string {
 		const jsspeccy = `${window.location.origin}/jsspeccy.js`;
+		const ext = new URL(url).pathname.split('.').pop()?.toLowerCase() ?? 'tap';
+		const isTape = ext === 'tap' || ext === 'tzx';
 		const html = `<!DOCTYPE html>
 <html><head>
 <style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000}#jsspeccy,#jsspeccy>div{width:100%!important;height:100%!important;display:flex!important;justify-content:center!important;align-items:center!important}#jsspeccy canvas{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}</style>
@@ -46,16 +48,14 @@
     const romData = await fetch('${url}').then(function(r) { return r.arrayBuffer(); });
     const _fetch = window.fetch;
     window.fetch = function(url, opts) {
-      if (url === 'rom://game.tap') return Promise.resolve(new Response(romData));
+      if (url === 'rom://game.${ext}') return Promise.resolve(new Response(romData));
       return _fetch(url, opts);
     };
     JSSpeccy(document.getElementById('jsspeccy'), {
       zoom: 2,
-      autoStart: true,
-      autoLoadTapes: true,
-      tapeAutoLoadMode: 'usr0',
+      autoStart: true,${isTape ? `\n      autoLoadTapes: true,\n      tapeAutoLoadMode: 'usr0',` : ''}
       uiEnabled: false,
-      openUrl: 'rom://game.tap'
+      openUrl: 'rom://game.${ext}'
     });
   })();
 <\/script>
@@ -143,6 +143,33 @@
 		return () => {
 			cancelled = true;
 			if (iframeSrc && iframeSrc.startsWith('blob:')) URL.revokeObjectURL(iframeSrc);
+		};
+	});
+
+	$effect(() => {
+		if (!iframeSrc) return;
+
+		const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' ', 'PageUp', 'PageDown']);
+
+		function onKeydown(e: KeyboardEvent) {
+			if (SCROLL_KEYS.has(e.key)) e.preventDefault();
+		}
+		function onBlur() {
+			document.documentElement.style.overflow = 'hidden';
+		}
+		function onFocus() {
+			document.documentElement.style.overflow = '';
+		}
+
+		window.addEventListener('keydown', onKeydown, { passive: false });
+		window.addEventListener('blur', onBlur);
+		window.addEventListener('focus', onFocus);
+
+		return () => {
+			window.removeEventListener('keydown', onKeydown);
+			window.removeEventListener('blur', onBlur);
+			window.removeEventListener('focus', onFocus);
+			document.documentElement.style.overflow = '';
 		};
 	});
 

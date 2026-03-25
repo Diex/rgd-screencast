@@ -11,7 +11,7 @@ export default defineConfig({
 		target: 'ESNEXT',
 		sourcemap: true
 	},
-	base: '/admin/',
+	base: '/',
 	optimizeDeps: { include: ['react/jsx-runtime'] },
 	plugins: [react(), tailwindcss()]
 });

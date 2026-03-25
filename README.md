@@ -1,14 +1,14 @@
 # RGD Screencast
 
-A web application for showcasing and playing retro video games directly in the browser. Built with SvelteKit and powered by [EmulatorJS](https://emulatorjs.org/) for in-browser emulation. Includes a separate admin panel built with [FireCMS](https://firecms.co/) for managing game content.
+A web application for showcasing and playing retro video games directly in the browser. Built with SvelteKit and powered by [EmulatorJS](https://emulatorjs.org/) for in-browser emulation, augmented by self-hosted custom emulators for MSX, ZX Spectrum, ZX81, and PC/DOS. Includes a separate admin panel built with [FireCMS](https://firecms.co/) for managing game content.
 
 ## Tech Stack
 
 - **Frontend**: SvelteKit (SPA, adapter-static), Svelte 5 (runes), Tailwind CSS v4, Skeleton v3
 - **Backend**: Firebase (Auth, Firestore, Storage)
 - **Admin**: FireCMS v3 (React 19, separate Vite app under `admin/`)
-- **Emulator**: EmulatorJS via CDN
-- **Hosting**: Firebase Hosting
+- **Emulator**: EmulatorJS via CDN + self-hosted WMSX (MSX), JSSpeccy3 (ZX Spectrum), JS-DOS (PC/DOS), ZX81 emulator
+- **Hosting**: Firebase Hosting (two separate sites: main app + admin)
 
 ## Prerequisites
 
@@ -70,7 +70,7 @@ Run the FireCMS admin dev server (in a separate terminal):
 
 ```bash
 cd admin && npm run dev
-# Available at http://localhost:5174/admin/
+# Available at http://localhost:5174/
 ```
 
 ## Building
@@ -81,21 +81,11 @@ Build the SvelteKit app only:
 npm run build
 ```
 
-Build everything (SvelteKit + admin, copies `admin/dist` into `build/admin`):
+Build everything (SvelteKit + admin — each to its own output directory, deployed as separate hosting targets):
 
 ```bash
 npm run build:all
 ```
-
-## Seeding Data
-
-The seed script populates Firestore with sample game entries. It requires a Firebase service account key.
-
-```bash
-GOOGLE_APPLICATION_CREDENTIALS_JSON='{"type":"service_account",...}' npx tsx scripts/seed.ts
-```
-
-Set `GOOGLE_APPLICATION_CREDENTIALS_JSON` to the full JSON contents of your service account key file.
 
 ## Deploying to Firebase
 
@@ -106,15 +96,21 @@ Set `GOOGLE_APPLICATION_CREDENTIALS_JSON` to the full JSON contents of your serv
    - **Authentication** — enable the Google sign-in provider.
    - **Cloud Firestore** — create a database (any region).
    - **Storage** — initialize the default bucket.
-3. **Log in** with the Firebase CLI:
+3. **Create two Hosting sites** in the Firebase console (Hosting → Add site):
+   - Main site (e.g. `rgd-screencast`) — for the SvelteKit app
+   - Admin site (e.g. `rgd-admin`) — for the FireCMS panel
+4. **Add the admin domain to Firebase Auth**: Authentication → Settings → Authorized domains → add your admin site domain (e.g. `rgd-admin.web.app`).
+5. **Log in** with the Firebase CLI:
    ```bash
    firebase login
    ```
-4. **Associate this repo** with your project:
+6. **Associate this repo** with your project and configure hosting targets:
    ```bash
    firebase use --add   # select your project and give it an alias (e.g. "default")
+   firebase target:apply hosting main <your-main-site-id>
+   firebase target:apply hosting rgd-admin <your-admin-site-id>
    ```
-5. **Fill in** both `.env` files with your project credentials (see [Environment Setup](#environment-setup)).
+7. **Fill in** both `.env` files with your project credentials (see [Environment Setup](#environment-setup)).
 
 ### Deploying
 
@@ -126,24 +122,32 @@ npm run deploy
 
 This runs `npm run build:all` followed by `firebase deploy`, which deploys:
 
-| Target               | What it does                                           |
-| -------------------- | ------------------------------------------------------ |
-| **Hosting**          | Uploads the `build/` directory (SvelteKit + admin SPA) |
-| **Firestore rules**  | Applies `firestore.rules`                              |
-| **Storage rules**    | Applies `storage.rules`                                |
+| Target                    | Source        | What it does                                          |
+| ------------------------- | ------------- | ----------------------------------------------------- |
+| **main** (Hosting)        | `build/`      | SvelteKit SPA — all routes fall back to `/200.html`   |
+| **rgd-admin** (Hosting)   | `admin/dist/` | FireCMS admin SPA — served at its own domain          |
+| **Firestore rules**       | —             | Applies `firestore.rules`                             |
+| **Storage rules**         | —             | Applies `storage.rules`                               |
 
 ### Source code vs user data
 
 It is important to understand what a deploy touches and what it does **not**:
 
-- **Source code** (this repo) — HTML/JS/CSS assets in `build/`, plus security rules. Every `firebase deploy` replaces these.
-- **User data** (Firestore documents, Storage files) — game entries, ROMs, screenshots. These live in Firebase and are **never** affected by a deploy. You can redeploy as often as you like without losing data.
+- **Source code** (this repo) — HTML/JS/CSS assets and security rules. Every `firebase deploy` replaces these.
+- **User data** (Firestore documents, Storage files) — game entries, ROMs, screenshots. These live in Firebase and are **never** affected by a deploy.
 
 ### Security rules
 
-**Firestore** (`firestore.rules`): Games are publicly readable. Any authenticated user can write (suitable for development). For production, restrict writes to users with a `fireCMSUser` custom claim.
+**Firestore** (`firestore.rules`):
+- Games are publicly readable.
+- Full writes require the `fireCMSUser: true` custom claim (admin only).
+- Any authenticated user can update only the `votes` field (used for star ratings).
 
-**Storage** (`storage.rules`): The `roms/` and `screenshots/` paths are publicly readable. Writes require authentication. Same production recommendation as above.
+**Storage** (`storage.rules`):
+- Files under `games/` are publicly readable.
+- Writes require the `fireCMSUser: true` custom claim.
+
+To grant admin access to a user, set the `fireCMSUser` custom claim via the Firebase Admin SDK or the Firebase console.
 
 ### Backing up user data
 
@@ -157,25 +161,39 @@ Firebase does not back up data automatically. For production use:
 ```
 src/
   lib/
-    firebase.ts          # Firebase initialization
-    types/game.ts        # Game interface, Platform type, core mapping
-    stores/games.ts      # Firestore query stores
-    components/          # Hero, GameCard, GameGrid, GamePlayer
-  routes/                # Layout, Home, Games listing, Game detail ([slug])
+    firebase.ts            # Firebase initialization
+    types/game.ts          # Game interface, Platform type, PLATFORMS mapping (37 cores)
+    stores/
+      auth.ts              # Auth state (currentUser, signInWithGoogle, logOut)
+      games.ts             # Firestore query stores (fetchGames, fetchGameBySlug)
+    utils/
+      storage.ts           # resolveStorageUrl helper
+    components/
+      Hero.svelte          # Landing hero section
+      GameCard.svelte      # Game card with thumbnail and rating
+      GameGrid.svelte      # Grid layout for game cards
+      GamePlayer.svelte    # Emulator player (blob URL iframe isolation)
+      StarRating.svelte    # Interactive 5-star rating component
+  routes/                  # Layout, Home, Games listing, Game detail ([slug])
 admin/
   src/
-    App.tsx              # FireCMS manual composition with BrowserRouter
-    collections/games.ts # FireCMS collection schema
-scripts/
-  seed.ts                # Firestore seed script
-firebase.json            # Hosting, Firestore, Storage config
-firestore.rules          # Firestore security rules
-storage.rules            # Storage security rules
+    App.tsx                # FireCMS manual composition with BrowserRouter
+    collections/games.ts   # FireCMS collection schema
+static/
+  emulatorjs/              # EmulatorJS loader and core data files
+  wmsx.js                  # MSX emulator (WMSX)
+  jsspeccy.js              # ZX Spectrum emulator (JSSpeccy3)
+  zx81.html                # ZX81 standalone emulator page
+  zx81_emu.js              # ZX81 emulator binary
+  colecovision.rom         # ColecoVision BIOS
+firebase.json              # Hosting (two targets), Firestore, Storage config
+firestore.rules            # Firestore security rules
+storage.rules              # Storage security rules
 ```
 
 ## Supported Platforms
 
-All 29 platforms supported by EmulatorJS are available. The platform code maps directly to the EmulatorJS core name.
+**37 platforms** are supported. Most use EmulatorJS cores loaded from CDN. Four platforms use self-hosted custom emulators (marked below).
 
 ### Nintendo
 
@@ -191,14 +209,14 @@ All 29 platforms supported by EmulatorJS are available. The platform code maps d
 
 ### Sega
 
-| Platform           | Code       | EmulatorJS Core |
-| ------------------ | ---------- | --------------- |
-| Genesis/Mega Drive | `genesis`  | `genesis`       |
-| Master System      | `sms`      | `sms`           |
-| Game Gear          | `gamegear` | `gamegear`      |
-| Sega 32X           | `sega32x`  | `sega32x`       |
-| Sega CD            | `segacd`   | `segacd`        |
-| Sega Saturn        | `saturn`   | `saturn`        |
+| Platform           | Code       | EmulatorJS Core    |
+| ------------------ | ---------- | ------------------ |
+| Genesis/Mega Drive | `genesis`  | `genesis_plus_gx`  |
+| Master System      | `sms`      | `sms`              |
+| Game Gear          | `gamegear` | `gamegear`         |
+| Sega 32X           | `sega32x`  | `sega32x`          |
+| Sega CD            | `segacd`   | `segacd`           |
+| Sega Saturn        | `saturn`   | `saturn`           |
 
 ### Sony
 
@@ -209,24 +227,24 @@ All 29 platforms supported by EmulatorJS are available. The platform code maps d
 
 ### Atari
 
-| Platform    | Code        | EmulatorJS Core |
-| ----------- | ----------- | --------------- |
-| Atari 2600  | `atari2600` | `atari2600`     |
-| Atari 5200  | `atari5200` | `atari5200`     |
-| Atari 7800  | `atari7800` | `atari7800`     |
-| Atari Jaguar| `jaguar`    | `jaguar`        |
-| Atari Lynx  | `lynx`      | `lynx`          |
+| Platform     | Code        | EmulatorJS Core |
+| ------------ | ----------- | --------------- |
+| Atari 2600   | `atari2600` | `atari2600`     |
+| Atari 5200   | `atari5200` | `atari5200`     |
+| Atari 7800   | `atari7800` | `atari7800`     |
+| Atari Jaguar | `jaguar`    | `jaguar`        |
+| Atari Lynx   | `lynx`      | `lynx`          |
 
 ### Commodore
 
-| Platform        | Code    | EmulatorJS Core |
-| --------------- | ------- | --------------- |
-| Commodore 64    | `c64`   | `c64`           |
-| Commodore 128   | `c128`  | `c128`          |
-| Amiga           | `amiga` | `amiga`         |
-| Commodore PET   | `pet`   | `pet`           |
-| Commodore Plus/4| `plus4` | `plus4`         |
-| Commodore VIC-20| `vic20` | `vic20`         |
+| Platform         | Code    | EmulatorJS Core |
+| ---------------- | ------- | --------------- |
+| Commodore 64     | `c64`   | `c64`           |
+| Commodore 128    | `c128`  | `c128`          |
+| Amiga            | `amiga` | `amiga`         |
+| Commodore PET    | `pet`   | `pet`           |
+| Commodore Plus/4 | `plus4` | `plus4`         |
+| Commodore VIC-20 | `vic20` | `vic20`         |
 
 ### Other
 
@@ -236,3 +254,14 @@ All 29 platforms supported by EmulatorJS are available. The platform code maps d
 | Arcade       | `arcade`   | `arcade`        |
 | ColecoVision | `coleco`   | `coleco`        |
 | MAME 2003    | `mame2003` | `mame2003`      |
+
+### Custom Emulators
+
+These platforms use self-hosted emulators bundled in `static/` and do not use the EmulatorJS CDN.
+
+| Platform    | Code         | Emulator                                      | ROM formats              |
+| ----------- | ------------ | --------------------------------------------- | ------------------------ |
+| MSX         | `msx`        | [WMSX](https://webmsx.org/) (`wmsx.js`)        | `.rom`, `.mx1`, `.mx2`   |
+| ZX Spectrum | `zxspectrum` | [JSSpeccy3](https://jsspeccy.zxdemo.org.uk/) (`jsspeccy.js`) | `.tap`, `.tzx`, `.z80`, `.sna`, `.szx` |
+| PC / DOS    | `dos`        | [JS-DOS v8](https://js-dos.com/) (CDN)         | `.zip` (jDosBox bundles) |
+| ZX81        | `zx81`       | Custom (`zx81.html` + `zx81_emu.js`)           | `.tzx`                   |

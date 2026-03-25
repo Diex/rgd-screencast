@@ -1,18 +1,28 @@
 {
-	"hosting": {
-		"public": "build",
-		"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-		"rewrites": [
-			{
-				"source": "/admin/**",
-				"destination": "/admin/index.html"
-			},
-			{
-				"source": "**",
-				"destination": "/200.html"
-			}
-		]
-	},
+	"hosting": [
+		{
+			"target": "main",
+			"public": "build",
+			"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+			"rewrites": [
+				{
+					"source": "**",
+					"destination": "/200.html"
+				}
+			]
+		},
+		{
+			"target": "rgd-admin",
+			"public": "admin/dist",
+			"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+			"rewrites": [
+				{
+					"source": "**",
+					"destination": "/index.html"
+				}
+			]
+		}
+	],
 	"firestore": {
 		"rules": "firestore.rules"
 	},

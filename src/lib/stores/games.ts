@@ -18,7 +18,7 @@ export async function fetchGames(force = false): Promise<void> {
 	loading.set(true);
 	error.set(null);
 	try {
-		const snapshot = await getDocs(collection(db, 'games'));
+		const snapshot = await getDocs(query(collection(db, 'games'), where('featured', '==', true)));
 		const result: Game[] = [];
 		snapshot.forEach((doc) => {
 			result.push({ id: doc.id, ...doc.data() } as Game);

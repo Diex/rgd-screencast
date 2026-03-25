@@ -74,6 +74,8 @@ export interface Game {
 	tags: string[];
 	featured: boolean;
 	votes?: Record<string, number>;
+	instructions?: string;
+	commands?: string;
 }
 
 export function getAverageRating(game: Game): number {

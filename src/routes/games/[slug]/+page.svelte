@@ -74,6 +74,20 @@
 			{#if game.description}
 				<p class="text-surface-300 whitespace-pre-line">{game.description}</p>
 			{/if}
+
+			{#if game.instructions}
+				<div>
+					<h3 class="h4 font-semibold mb-1">Instructions</h3>
+					<p class="text-surface-300 whitespace-pre-line">{game.instructions}</p>
+				</div>
+			{/if}
+
+			{#if game.commands}
+				<div>
+					<h3 class="h4 font-semibold mb-1">Commands</h3>
+					<p class="text-surface-300 whitespace-pre-line">{game.commands}</p>
+				</div>
+			{/if}
 		</div>
 	</div>
 {/if}

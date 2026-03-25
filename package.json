@@ -6,7 +6,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"build:admin": "cd admin && npm run build",
-		"build:all": "npm run build && npm run build:admin && cp -r admin/dist build/admin",
+		"build:all": "npm run build && npm run build:admin",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"deploy": "npm run build:all && firebase deploy"

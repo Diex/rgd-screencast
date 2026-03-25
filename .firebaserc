@@ -3,6 +3,13 @@
     "default": "rgd-screencast",
     "rgd": "rgd-screencast"
   },
-  "targets": {},
+  "targets": {
+    "rgd-screencast": {
+      "hosting": {
+        "main": ["rgd-screencast"],
+        "rgd-admin": ["rgd-admin"]
+      }
+    }
+  },
   "etags": {}
 }

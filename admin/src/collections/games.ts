@@ -121,6 +121,16 @@ export const gamesCollection = buildCollection({
 			},
 			dataType: 'number',
 		},
+		instructions: {
+			name: 'Instructions',
+			dataType: 'string',
+			multiline: true,
+		},
+		commands: {
+			name: 'Commands',
+			dataType: 'string',
+			multiline: true,
+		},
 		votes: {
 			name: 'Votes',
 			dataType: 'map',
