@@ -1,9 +1,10 @@
 import { writable } from 'svelte/store';
 import {
 	onAuthStateChanged,
-	signInWithPopup,
+	signInWithRedirect,
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
+	sendPasswordResetEmail,
 	signOut,
 	GoogleAuthProvider,
 	type User
@@ -22,7 +23,7 @@ const googleProvider = new GoogleAuthProvider();
 
 export async function signInWithGoogle(): Promise<void> {
 	try {
-		await signInWithPopup(auth, googleProvider);
+		await signInWithRedirect(auth, googleProvider);
 	} catch (e) {
 		console.error('Sign-in failed:', e);
 	}
@@ -34,6 +35,10 @@ export async function signUpWithEmail(email: string, password: string): Promise<
 
 export async function signInWithEmail(email: string, password: string): Promise<void> {
 	await signInWithEmailAndPassword(auth, email, password);
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+	await sendPasswordResetEmail(auth, email);
 }
 
 export async function logOut(): Promise<void> {

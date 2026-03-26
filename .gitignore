@@ -5,5 +5,7 @@ admin/node_modules
 .svelte-kit
 .env
 .env.local
+admin/.env
+admin/.env.local
 .firebase
 *.log
