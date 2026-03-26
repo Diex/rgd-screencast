@@ -1,3 +1,20 @@
 @import 'tailwindcss';
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/themes/crimson';
+
+:root {
+	--color-primary-50: 220 225 255;
+	--color-primary-100: 190 198 245;
+	--color-primary-200: 155 165 225;
+	--color-primary-300: 120 132 205;
+	--color-primary-400: 90 90 130;
+	--color-primary-500: 48 51 95;
+	--color-primary-600: 38 41 80;
+	--color-primary-700: 28 31 65;
+	--color-primary-800: 20 22 50;
+	--color-primary-900: 13 14 38;
+	--color-surface-900: 10 10 26;
+	--color-surface-800: 18 19 42;
+	--color-surface-700: 28 30 58;
+	--color-surface-600: 40 43 78;
+}

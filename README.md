@@ -255,13 +255,22 @@ storage.rules              # Storage security rules
 | ColecoVision | `coleco`   | `coleco`        |
 | MAME 2003    | `mame2003` | `mame2003`      |
 
-### Custom Emulators
+### Emulator Technologies
 
-These platforms use self-hosted emulators bundled in `static/` and do not use the EmulatorJS CDN.
+| Technology | Delivery | Platforms covered | Static assets |
+| ---------- | -------- | ----------------- | ------------- |
+| [EmulatorJS](https://emulatorjs.org/) | CDN (`cdn.emulatorjs.org/stable/data/`) | Nintendo (NES, SNES, N64, GB, GBA, NDS, VB), Sega (Genesis, SMS, Game Gear, 32X, CD, Saturn), Sony (PSX, PSP), Atari (2600, 5200, 7800, Jaguar, Lynx), Commodore (C64, C128, Amiga, PET, Plus/4, VIC-20), 3DO, Arcade, ColecoVision, MAME 2003 | `emulatorjs/loader.js`, `emulatorjs/emulator.min.js`, `emulatorjs/cores/` |
+| [WMSX](https://webmsx.org/) | Self-hosted | MSX | `wmsx.js` |
+| [JSSpeccy3](https://github.com/gasman/jsspeccy3) | Self-hosted | ZX Spectrum (48k, 128k) | `jsspeccy.js`, `jsspeccy-worker.js`, `jsspeccy-core.wasm` |
+| [JS-DOS v8](https://js-dos.com/) | CDN (`v8.js-dos.com/latest/`) | PC / DOS | — |
+| ZX81 emulator | Self-hosted | ZX81 | `zx81.html`, `zx81_emu.js` |
 
-| Platform    | Code         | Emulator                                      | ROM formats              |
-| ----------- | ------------ | --------------------------------------------- | ------------------------ |
-| MSX         | `msx`        | [WMSX](https://webmsx.org/) (`wmsx.js`)        | `.rom`, `.mx1`, `.mx2`   |
-| ZX Spectrum | `zxspectrum` | [JSSpeccy3](https://jsspeccy.zxdemo.org.uk/) (`jsspeccy.js`) | `.tap`, `.tzx`, `.z80`, `.sna`, `.szx` |
-| PC / DOS    | `dos`        | [JS-DOS v8](https://js-dos.com/) (CDN)         | `.zip` (jDosBox bundles) |
-| ZX81        | `zx81`       | Custom (`zx81.html` + `zx81_emu.js`)           | `.tzx`                   |
+**ROM formats by technology:**
+
+| Technology | Accepted formats |
+| ---------- | ---------------- |
+| EmulatorJS | Platform-specific (e.g. `.nes`, `.sfc`, `.gba`, `.n64`, `.bin`, `.iso`, `.zip`) |
+| WMSX | `.rom`, `.mx1`, `.mx2`, `.zip` |
+| JSSpeccy3 | `.tap`, `.tzx`, `.z80`, `.sna`, `.szx` |
+| JS-DOS | `.zip` (jDosBox bundles) |
+| ZX81 | `.tzx` |

@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>All Games - RGD Screencast</title>
+	<title>All Games - Retro_ GameDev 2026</title>
 </svelte:head>
 
 <div class="space-y-8">

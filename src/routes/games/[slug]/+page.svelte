@@ -34,7 +34,7 @@
 </script>
 
 <svelte:head>
-	<title>{game ? game.title : 'Game'} - RGD Screencast</title>
+	<title>{game ? game.title : 'Game'} - Retro_ GameDev 2026</title>
 </svelte:head>
 
 {#if loading}

@@ -88,7 +88,7 @@
 	<AppBar>
 		<AppBar.Toolbar>
 			<AppBar.Lead>
-				<a href="/" class="text-xl font-bold text-primary-500">RGD Screencast</a>
+				<a href="/" class="text-xl font-bold text-white font-mono">Retro_ <span class="text-primary-300">GameDev 2026</span></a>
 			</AppBar.Lead>
 			<AppBar.Trail>
 				<nav class="flex items-center gap-4">
@@ -114,7 +114,7 @@
 
 	<!-- Footer -->
 	<footer class="bg-surface-800 p-4 text-center text-sm text-surface-400">
-		<p>&copy; {new Date().getFullYear()} RGD Screencast. Play retro games in your browser.</p>
+		<p>&copy; {new Date().getFullYear()} Retro_ GameDev 2026. Play retro games in your browser.</p>
 	</footer>
 </div>
 

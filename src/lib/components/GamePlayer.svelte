@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Game } from '$lib/types/game';
 	import { getCoreForPlatform } from '$lib/types/game';
+	import type { Platform } from '$lib/types/game';
 	import { resolveStorageUrl } from '$lib/utils/storage';
+	import { PLATFORM_KEYBINDINGS } from '$lib/config/keybindings';
 
 	let { game }: { game: Game } = $props();
 
@@ -28,6 +30,8 @@
 <script>
   WMSX.CARTRIDGE1_URL = '${url}';
   WMSX.SCREEN_ELEMENT_ID = 'wmsx-screen';
+  WMSX.MACHINE = 'MSX1E';
+  WMSX.SCREEN_CONTROL_BAR = 0;
 <\/script>
 </body></html>`;
 		return URL.createObjectURL(new Blob([html], { type: 'text/html' }));
@@ -86,6 +90,9 @@
 	function buildIframeBlobUrl(url: string, core: string): string {
 		const biosUrl = BIOS_MAP[core];
 		const biosLine = biosUrl ? `\n  var EJS_biosUrl = '${biosUrl}';` : '';
+		const controls = PLATFORM_KEYBINDINGS[game.platform as Platform];
+		console.log('[GamePlayer] platform:', game.platform, '| controls found:', !!controls, '| controls:', controls);
+		const controlsLine = controls ? `\n  var EJS_defaultControls = ${controls};` : '';
 		const html = `<!DOCTYPE html>
 <html><head>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
@@ -97,7 +104,7 @@
   var EJS_gameUrl = '${url}';${biosLine}
   var EJS_pathtodata = '${EJS_CDN}';
   var EJS_threads = false;
-  var EJS_startOnLoaded = true;
+  var EJS_startOnLoaded = true;${controlsLine}
 <\/script>
 <script src="${EJS_CDN}loader.js"><\/script>
 </body></html>`;
