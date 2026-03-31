@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import { AppBar } from '@skeletonlabs/skeleton-svelte';
 	import type { Snippet } from 'svelte';
 	import {
 		currentUser,
@@ -85,27 +84,25 @@
 
 <div class="flex min-h-screen flex-col bg-surface-900 text-surface-50">
 	<!-- Header -->
-	<AppBar>
-		<AppBar.Toolbar>
-			<AppBar.Lead>
-				<a href="/" class="text-xl font-bold text-white font-mono">Retro_ <span class="text-primary-300">GameDev 2026</span></a>
-			</AppBar.Lead>
-			<AppBar.Trail>
-				<nav class="flex items-center gap-4">
-					<a href="/" class="hover:text-primary-400 transition-colors">Home</a>
-					<a href="/games" class="hover:text-primary-400 transition-colors">Games</a>
-					{#if $authLoading}
-						<div class="h-5 w-5 animate-spin rounded-full border-2 border-surface-400 border-t-primary-500"></div>
-					{:else if $currentUser}
-						<span class="text-sm text-surface-300">{$currentUser.displayName || $currentUser.email}</span>
-						<button class="btn btn-sm preset-tonal-surface" onclick={logOut}>Sign Out</button>
-					{:else}
-						<button class="btn btn-sm preset-filled-primary-500" onclick={openAuth}>Sign In</button>
-					{/if}
-				</nav>
-			</AppBar.Trail>
-		</AppBar.Toolbar>
-	</AppBar>
+	<header class="rgd-header">
+		<a href="/" class="rgd-wordmark">Retro_<span>GameDev</span></a>
+
+		<nav class="rgd-nav">
+			<a href="/">HOME</a>
+			<a href="/games">GAMES</a>
+		</nav>
+
+		<div class="rgd-trail">
+			{#if $authLoading}
+				<div class="h-4 w-4 animate-spin rounded-full border-2 border-surface-500 border-t-primary-400"></div>
+			{:else if $currentUser}
+				<span class="font-mono text-xs tracking-wide text-surface-400">{$currentUser.displayName || $currentUser.email}</span>
+				<button class="btn btn-sm preset-tonal-surface font-mono text-xs tracking-widest uppercase" onclick={logOut}>Sign Out</button>
+			{:else}
+				<button class="btn btn-sm preset-filled-primary-500 font-mono text-xs tracking-widest uppercase" onclick={openAuth}>Sign In</button>
+			{/if}
+		</div>
+	</header>
 
 	<!-- Main content -->
 	<main class="container mx-auto flex-1 px-4 py-8">

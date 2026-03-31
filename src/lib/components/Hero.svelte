@@ -191,9 +191,10 @@
 >
 	<canvas bind:this={canvas} class="absolute inset-0 h-full w-full" aria-hidden="true"></canvas>
 	<div class="relative z-10 mx-auto max-w-4xl space-y-6 px-4 py-20">
+		<img src="/assets/logo_retrodev.png" alt="RetroDev" class="rgd-hero-main-logo" />
 		<h1 class="font-mono font-bold drop-shadow-lg leading-tight">
-			<span class="block text-4xl md:text-6xl text-white">&gt;Retro_</span>
-			<span class="block text-5xl md:text-7xl text-white">GameDev 2026</span>
+			<span class="block text-3xl md:text-4xl text-white">&gt;Retro_</span>
+			<span class="block text-4xl md:text-5xl text-white">GameDev 2026</span>
 		</h1>
 		<p class="text-xl md:text-2xl" style="color:rgba(255,255,255,0.7);">
 			Vote for the new classic. No downloads, no installs. Sign in to cast your vote.
@@ -204,6 +205,19 @@
 				class="btn btn-lg"
 				style="background-color:#30335f;color:white;border:1px solid rgba(48,51,95,0.5);"
 			>Browse Games</a>
+		</div>
+
+		<div class="rgd-hero-logos">
+			<span class="rgd-hero-logos-label">presented by</span>
+			<div class="rgd-hero-logos-row">
+				<a href="https://vcfed.org" target="_blank" rel="noopener noreferrer">
+					<img src="/assets/vcf-logo_125x125.png" alt="Vintage Computer Festival" />
+				</a>
+				<div class="rgd-hero-logos-divider"></div>
+				<a href="https://espaciotec.com.ar/" target="_blank" rel="noopener noreferrer">
+					<img src="/assets/logo-et.png" alt="Espacio TEC" />
+				</a>
+			</div>
 		</div>
 	</div>
 </section>

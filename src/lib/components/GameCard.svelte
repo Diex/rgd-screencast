@@ -17,13 +17,13 @@
 </script>
 
 <a href="/games/{game.slug}" class="card card-hover overflow-hidden">
-	<div class="aspect-video w-full overflow-hidden bg-surface-800">
+	<div class="aspect-square w-full overflow-hidden bg-surface-800">
 		{#if thumbnailUrl}
 			<img
 				src={thumbnailUrl}
 				alt={game.title}
 				loading="lazy"
-				class="h-full w-full object-cover"
+				class="h-full w-full object-contain"
 			/>
 		{:else}
 			<div class="flex h-full items-center justify-center text-surface-500">
