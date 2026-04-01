@@ -1,9 +1,7 @@
 <script lang="ts">
   import type { Game } from "$lib/types/game";
   import { getCoreForPlatform } from "$lib/types/game";
-  import type { Platform } from "$lib/types/game";
   import { resolveStorageUrl } from "$lib/utils/storage";
-  import { PLATFORM_KEYBINDINGS } from "$lib/config/keybindings";
 
   let { game }: { game: Game } = $props();
 
@@ -95,23 +93,6 @@
   function buildIframeBlobUrl(url: string, core: string): string {
     const biosUrl = BIOS_MAP[core];
     const biosLine = biosUrl ? `\n  var EJS_biosUrl = '${biosUrl}';` : "";
-    const controls = PLATFORM_KEYBINDINGS[game.platform as Platform];
-    console.log(
-      "[GamePlayer] platform:",
-      game.platform,
-      "| controls found:",
-      !!controls,
-      "| controls:",
-      controls,
-    );
-    const controlsLine = controls
-      ? `\n  var EJS_defaultControls = ${JSON.stringify(controls)};`
-      : "";
-    const onGameStartLine = controls
-      ? `\n  var EJS_onGameStart = function() {
-    if (window.EJS_emulator) window.EJS_emulator.controls = ${JSON.stringify(controls)};
-  };`
-      : "";
     const html = `<!DOCTYPE html>
 <html><head>
 <style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
@@ -123,7 +104,7 @@
   var EJS_gameUrl = '${url}';${biosLine}
   var EJS_pathtodata = '${EJS_CDN}';
   var EJS_threads = false;
-  var EJS_startOnLoaded = true;${controlsLine}${onGameStartLine}
+  var EJS_startOnLoaded = true;
 <\/script>
 <script src="${EJS_CDN}loader.js"><\/script>
 </body></html>`;
