@@ -1,0 +1,56 @@
+<script type='text/javascript'>
+
+    EJS_player = '#game';
+    EJS_shader = "CRTAperture";
+    EJS_aspectRatio = "4:3";
+    EJS_core = 'coleco';
+
+   
+
+    // URL to Game rom
+     
+    EJS_gameUrl = 'rom/main.rom';
+    EJS_biosUrl = "data/cores/colecovision.rom";
+    /*
+     *  Path to the WASM / JS files
+     *  HAS TO BE in the same directory.
+     */
+   
+    EJS_pathtodata = 'data/';
+
+    // CONTROLES
+   
+EJS_defaultControls = {
+0: {
+    0: {
+        'value': 'x',
+        'value2': ''}, //botón fire 1
+    8: {
+        'value': 'z',
+        'value2': ''}, //botón fire 2
+       
+    4:{ value:'up arrow' },
+    5:{ value:'down arrow' },
+    6:{ value:'left arrow' },
+    7:{ value:'right arrow' },
+    9:{ value:'2' }, // keypad 2
+    1:{ value:'1'}, // keypad 1
+    2:{ value:'w'}, // keypad *
+    3:{ value:'q'}, // keypad #
+    14:{ value:'7'}, // keypad 7
+    15:{ value:'8'}, // keypad 8  
+    11:{ value:'4' }, //keypad 4
+    10:{ value:'3' }, //keypad 3
+    13:{ value:'6'}, // keypad 6
+    12:{ value:'5'}  // keypad 5
+
+},
+1:{},
+2:{},
+3:{}
+};
+
+
+</script>
+
+<script src='data/loader.js'></script>
