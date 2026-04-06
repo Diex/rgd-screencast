@@ -86,6 +86,50 @@
     return URL.createObjectURL(new Blob([html], { type: "text/html" }));
   }
 
+  function buildColecoIframeBlobUrl(url: string): string {
+    const biosUrl = `${window.location.origin}/colecovision.rom`;
+    const html = `<!DOCTYPE html>
+<html><head>
+<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}</style>
+</head><body>
+<div id="game" style="width:100%;height:100%"></div>
+<script>
+  var EJS_player = '#game';
+  var EJS_core = 'coleco';
+  var EJS_gameUrl = '${url}';
+  var EJS_biosUrl = '${biosUrl}';
+  var EJS_pathtodata = '${EJS_CDN}';
+  var EJS_shader = "CRTAperture";
+  var EJS_aspectRatio = "4:3";
+  var EJS_threads = false;
+  var EJS_startOnLoaded = true;
+  var EJS_defaultControls = {
+    0: {
+      0:  { value: 'x',          value2: '' },
+      8:  { value: 'z',          value2: '' },
+      4:  { value: 'up arrow' },
+      5:  { value: 'down arrow' },
+      6:  { value: 'left arrow' },
+      7:  { value: 'right arrow' },
+      9:  { value: '2' },
+      1:  { value: '1' },
+      2:  { value: 'w' },
+      3:  { value: 'q' },
+      14: { value: '7' },
+      15: { value: '8' },
+      11: { value: '4' },
+      10: { value: '3' },
+      13: { value: '6' },
+      12: { value: '5' }
+    },
+    1: {}, 2: {}, 3: {}
+  };
+<\/script>
+<script src="${EJS_CDN}loader.js"><\/script>
+</body></html>`;
+    return URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  }
+
   const BIOS_MAP: Partial<Record<string, string>> = {
     coleco: `${window.location.origin}/colecovision.rom`,
   };
@@ -209,6 +253,8 @@
       iframeSrc = buildJsSpeccy3IframeBlobUrl(romUrl);
     else if (game.platform === "dos")
       iframeSrc = buildJsDosIframeBlobUrl(romUrl);
+    else if (game.platform === "coleco")
+      iframeSrc = buildColecoIframeBlobUrl(romUrl);
     else iframeSrc = buildIframeBlobUrl(romUrl, core);
   }
 </script>
