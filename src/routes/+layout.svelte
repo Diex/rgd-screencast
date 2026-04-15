@@ -10,6 +10,7 @@
 		sendPasswordReset,
 		logOut
 	} from '$lib/stores/auth';
+	import { allowedToVote } from '$lib/stores/remoteConfig';
 
 	let { children }: { children: Snippet } = $props();
 
@@ -90,6 +91,9 @@
 		<nav class="rgd-nav">
 			<a href="/">HOME</a>
 			<a href="/games">GAMES</a>
+			{#if !$allowedToVote}
+				<a href="/audience-award">AWARD</a>
+			{/if}
 		</nav>
 
 		<div class="rgd-trail">

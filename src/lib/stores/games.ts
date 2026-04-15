@@ -34,6 +34,37 @@ export async function fetchGames(force = false): Promise<void> {
 	}
 }
 
+export const allGames = writable<Game[]>([]);
+let allGamesFetched = false;
+
+export async function fetchAllGames(force = false): Promise<void> {
+	if (allGamesFetched && !force) return;
+	loading.set(true);
+	error.set(null);
+	try {
+		const snapshot = await getDocs(collection(db, 'games'));
+		const result: Game[] = [];
+		snapshot.forEach((doc) => result.push({ id: doc.id, ...doc.data() } as Game));
+		allGames.set(result);
+		allGamesFetched = true;
+	} catch (e) {
+		console.error('Failed to fetch all games:', e);
+		error.set(e instanceof Error ? e.message : 'Failed to load games');
+	} finally {
+		loading.set(false);
+	}
+}
+
+export const globalAverage = derived(allGames, ($games) => {
+	const allVotes = $games.flatMap((g) => Object.values(g.votes ?? {}));
+	if (allVotes.length === 0) return 3;
+	return allVotes.reduce((s, v) => s + v, 0) / allVotes.length;
+});
+
+export const gamesByBayesianScore = derived([allGames, globalAverage], ([$games, $C]) =>
+	[...$games].sort((a, b) => getBayesianScore(b, $C) - getBayesianScore(a, $C))
+);
+
 export async function fetchGameBySlug(slug: string): Promise<Game | null> {
 	const q = query(collection(db, 'games'), where('slug', '==', slug));
 	const snapshot = await getDocs(q);

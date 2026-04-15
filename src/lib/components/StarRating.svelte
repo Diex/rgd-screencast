@@ -2,7 +2,7 @@
 	import type { Game } from '$lib/types/game';
 	import { getAverageRating, getRatingCount, getUserRating } from '$lib/types/game';
 	import { currentUser } from '$lib/stores/auth';
-	import { showRatings } from '$lib/stores/remoteConfig';
+	import { showRatings, allowedToVote } from '$lib/stores/remoteConfig';
 	import { doc, updateDoc, deleteField } from 'firebase/firestore';
 	import { db } from '$lib/firebase';
 
@@ -59,7 +59,7 @@
 <div class="flex flex-col gap-1">
 	<div class="flex items-center gap-1">
 		{#each [1, 2, 3, 4, 5] as star}
-			{#if $currentUser}
+			{#if $currentUser && $allowedToVote}
 				<button
 					type="button"
 					class="text-2xl transition-colors {saving ? 'cursor-wait' : 'cursor-pointer'}"
@@ -72,6 +72,10 @@
 						{displayStars(star) ? '\u2605' : '\u2606'}
 					</span>
 				</button>
+			{:else if $currentUser}
+				<span class="text-2xl {star <= userRating ? 'text-yellow-400' : 'text-surface-600'}">
+					{star <= userRating ? '\u2605' : '\u2606'}
+				</span>
 			{:else}
 				<span class="text-2xl {$showRatings && star <= Math.round(average) ? 'text-yellow-400' : 'text-surface-600'}">
 					{$showRatings && star <= Math.round(average) ? '\u2605' : '\u2606'}
@@ -88,11 +92,17 @@
 			{/if}
 			{#if !$currentUser}
 				<span class="text-surface-500">&middot; Sign in to rate</span>
+			{:else if !$allowedToVote}
+				<span class="text-surface-500">&middot; Voting closed</span>
 			{/if}
 		</div>
 	{:else if !$currentUser}
 		<div class="text-sm text-surface-400">
 			<span class="text-surface-500">Sign in to rate</span>
+		</div>
+	{:else if !$allowedToVote}
+		<div class="text-sm text-surface-400">
+			<span class="text-surface-500">Voting closed</span>
 		</div>
 	{/if}
 </div>

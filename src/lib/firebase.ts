@@ -28,4 +28,4 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 export const remoteConfig = getRemoteConfig(app);
-remoteConfig.defaultConfig = { showRatings: true };
+remoteConfig.defaultConfig = { showRatings: true, allowedToVote: true };
