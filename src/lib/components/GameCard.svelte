@@ -2,6 +2,7 @@
 	import type { Game } from '$lib/types/game';
 	import { getLabelForPlatform, getAverageRating, getRatingCount } from '$lib/types/game';
 	import { resolveStorageUrl } from '$lib/utils/storage';
+	import { showRatings } from '$lib/stores/remoteConfig';
 
 	let { game }: { game: Game } = $props();
 
@@ -41,7 +42,7 @@
 			{#each game.tags as tag}
 				<span class="badge preset-tonal-surface text-xs">{tag}</span>
 			{/each}
-			{#if count > 0}
+			{#if $showRatings && count > 0}
 				<span class="badge preset-tonal-warning text-xs">&#9733; {average.toFixed(1)}</span>
 			{/if}
 		</div>

@@ -91,3 +91,11 @@ export function getRatingCount(game: Game): number {
 export function getUserRating(game: Game, uid: string): number {
 	return game.votes?.[uid] ?? 0;
 }
+
+export const BAYESIAN_MIN_VOTES = 10;
+
+export function getBayesianScore(game: Game, globalAvg: number, minVotes = BAYESIAN_MIN_VOTES): number {
+	const v = getRatingCount(game);
+	const R = getAverageRating(game);
+	return (v * R + minVotes * globalAvg) / (v + minVotes);
+}

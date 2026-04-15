@@ -2,6 +2,7 @@
 	import type { Game } from '$lib/types/game';
 	import { getAverageRating, getRatingCount, getUserRating } from '$lib/types/game';
 	import { currentUser } from '$lib/stores/auth';
+	import { showRatings } from '$lib/stores/remoteConfig';
 	import { doc, updateDoc, deleteField } from 'firebase/firestore';
 	import { db } from '$lib/firebase';
 
@@ -72,20 +73,26 @@
 					</span>
 				</button>
 			{:else}
-				<span class="text-2xl {star <= Math.round(average) ? 'text-yellow-400' : 'text-surface-600'}">
-					{star <= Math.round(average) ? '\u2605' : '\u2606'}
+				<span class="text-2xl {$showRatings && star <= Math.round(average) ? 'text-yellow-400' : 'text-surface-600'}">
+					{$showRatings && star <= Math.round(average) ? '\u2605' : '\u2606'}
 				</span>
 			{/if}
 		{/each}
 	</div>
-	<div class="text-sm text-surface-400">
-		{#if count > 0}
-			{average.toFixed(1)} ({count} {count === 1 ? 'rating' : 'ratings'})
-		{:else}
-			No ratings yet
-		{/if}
-		{#if !$currentUser}
-			<span class="text-surface-500">&middot; Sign in to rate</span>
-		{/if}
-	</div>
+	{#if $showRatings}
+		<div class="text-sm text-surface-400">
+			{#if count > 0}
+				{average.toFixed(1)} ({count} {count === 1 ? 'rating' : 'ratings'})
+			{:else}
+				No ratings yet
+			{/if}
+			{#if !$currentUser}
+				<span class="text-surface-500">&middot; Sign in to rate</span>
+			{/if}
+		</div>
+	{:else if !$currentUser}
+		<div class="text-sm text-surface-400">
+			<span class="text-surface-500">Sign in to rate</span>
+		</div>
+	{/if}
 </div>

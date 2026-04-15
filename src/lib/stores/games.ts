@@ -2,6 +2,7 @@ import { writable, derived } from 'svelte/store';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '$lib/firebase';
 import type { Game } from '$lib/types/game';
+import { getBayesianScore } from '$lib/types/game';
 
 export const games = writable<Game[]>([]);
 export const loading = writable(true);

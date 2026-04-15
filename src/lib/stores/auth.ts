@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import {
 	onAuthStateChanged,
-	signInWithRedirect,
+	signInWithPopup,
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
 	sendPasswordResetEmail,
@@ -22,11 +22,7 @@ onAuthStateChanged(auth, (user) => {
 const googleProvider = new GoogleAuthProvider();
 
 export async function signInWithGoogle(): Promise<void> {
-	try {
-		await signInWithRedirect(auth, googleProvider);
-	} catch (e) {
-		console.error('Sign-in failed:', e);
-	}
+	await signInWithPopup(auth, googleProvider);
 }
 
 export async function signUpWithEmail(email: string, password: string): Promise<void> {
