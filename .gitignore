@@ -9,3 +9,4 @@ admin/.env
 admin/.env.local
 .firebase
 *.log
+rgd-screencast-firebase-adminsdk.json

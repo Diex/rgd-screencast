@@ -68,41 +68,44 @@
 					onclick={() => rate(star)}
 					aria-label="Rate {star} star{star > 1 ? 's' : ''}"
 				>
-					<span class={displayStars(star) ? 'text-yellow-400' : 'text-surface-600'}>
+					<span class={displayStars(star) ? 'text-yellow-400' : 'text-surface-200'}>
 						{displayStars(star) ? '\u2605' : '\u2606'}
 					</span>
 				</button>
 			{:else if $currentUser}
-				<span class="text-2xl {star <= userRating ? 'text-yellow-400' : 'text-surface-600'}">
+				<span class="text-2xl {star <= userRating ? 'text-yellow-400' : 'text-surface-200'}">
 					{star <= userRating ? '\u2605' : '\u2606'}
 				</span>
 			{:else}
-				<span class="text-2xl {$showRatings && star <= Math.round(average) ? 'text-yellow-400' : 'text-surface-600'}">
+				<span
+					class="text-2xl {$showRatings && star <= Math.round(average) ? 'text-yellow-400' : 'text-surface-200'}"
+					title="You need to login to vote"
+				>
 					{$showRatings && star <= Math.round(average) ? '\u2605' : '\u2606'}
 				</span>
 			{/if}
 		{/each}
 	</div>
 	{#if $showRatings}
-		<div class="text-sm text-surface-400">
+		<div class="text-sm text-surface-200">
 			{#if count > 0}
 				{average.toFixed(1)} ({count} {count === 1 ? 'rating' : 'ratings'})
 			{:else}
 				No ratings yet
 			{/if}
 			{#if !$currentUser}
-				<span class="text-surface-500">&middot; Sign in to rate</span>
+				<span class="text-surface-300">&middot; Sign in to rate</span>
 			{:else if !$allowedToVote}
-				<span class="text-surface-500">&middot; Voting closed</span>
+				<span class="text-surface-300">&middot; Voting closed</span>
 			{/if}
 		</div>
 	{:else if !$currentUser}
-		<div class="text-sm text-surface-400">
-			<span class="text-surface-500">Sign in to rate</span>
+		<div class="text-sm text-surface-200">
+			<span class="text-surface-300">Sign in to rate</span>
 		</div>
 	{:else if !$allowedToVote}
-		<div class="text-sm text-surface-400">
-			<span class="text-surface-500">Voting closed</span>
+		<div class="text-sm text-surface-200">
+			<span class="text-surface-300">Voting closed</span>
 		</div>
 	{/if}
 </div>

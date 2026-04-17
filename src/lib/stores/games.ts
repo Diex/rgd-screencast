@@ -2,7 +2,7 @@ import { writable, derived } from 'svelte/store';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '$lib/firebase';
 import type { Game } from '$lib/types/game';
-import { getBayesianScore } from '$lib/types/game';
+import { getBayesianScore, getRatingCount } from '$lib/types/game';
 
 export const games = writable<Game[]>([]);
 export const loading = writable(true);
@@ -62,7 +62,14 @@ export const globalAverage = derived(allGames, ($games) => {
 });
 
 export const gamesByBayesianScore = derived([allGames, globalAverage], ([$games, $C]) =>
-	[...$games].sort((a, b) => getBayesianScore(b, $C) - getBayesianScore(a, $C))
+	[...$games].sort((a, b) => {
+		const va = getRatingCount(a);
+		const vb = getRatingCount(b);
+		if (va === 0 && vb === 0) return 0;
+		if (va === 0) return 1;
+		if (vb === 0) return -1;
+		return getBayesianScore(b, $C) - getBayesianScore(a, $C);
+	})
 );
 
 export async function fetchGameBySlug(slug: string): Promise<Game | null> {
