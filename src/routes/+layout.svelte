@@ -11,8 +11,17 @@
 		logOut
 	} from '$lib/stores/auth';
 	import { allowedToVote } from '$lib/stores/remoteConfig';
+	import { page } from '$app/state';
+	import { logEvent } from '$lib/analytics';
 
 	let { children }: { children: Snippet } = $props();
+
+	$effect(() => {
+		logEvent('page_view', {
+			page_path: page.url.pathname,
+			page_title: document.title
+		});
+	});
 
 	let showAuthModal = $state(false);
 	let isSignUp = $state(false);
